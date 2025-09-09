@@ -127,12 +127,21 @@ let tick = 0;
 
 function initPlanets() {
   const map = document.querySelector(".map");
-  planets = Array.from(map.querySelectorAll(".aspect-btn")).map((planet, i) => {
+  const planetsEls = Array.from(map.querySelectorAll(".aspect-btn"));
+  const cx = map.offsetWidth / 2;
+  const cy = map.offsetHeight / 2;
+  const radius = Math.min(map.offsetWidth, map.offsetHeight) / 3; // круг распределения
+
+  planets = planetsEls.map((planet, i) => {
+    let angle = (i / planetsEls.length) * Math.PI * 2; // равномерно по кругу
+    let baseX = cx + Math.cos(angle) * radius - planet.offsetWidth / 2;
+    let baseY = cy + Math.sin(angle) * radius - planet.offsetHeight / 2;
+
     return {
       el: planet,
-      baseX: Math.random() * (map.offsetWidth - planet.offsetWidth),
-      baseY: Math.random() * (map.offsetHeight - planet.offsetHeight),
-      offsetX: Math.random() * 1000, // для уникального шума
+      baseX,
+      baseY,
+      offsetX: Math.random() * 1000,
       offsetY: Math.random() * 1000,
       pulseOffset: Math.random() * Math.PI * 2
     };
