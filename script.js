@@ -130,12 +130,19 @@ function initPlanets() {
   const planetsEls = Array.from(map.querySelectorAll(".aspect-btn"));
   const cx = map.offsetWidth / 2;
   const cy = map.offsetHeight / 2;
-  const radius = Math.min(map.offsetWidth, map.offsetHeight) / 3; // круг распределения
+  const minSide = Math.min(map.offsetWidth, map.offsetHeight);
 
   planets = planetsEls.map((planet, i) => {
-    let angle = (i / planetsEls.length) * Math.PI * 2; // равномерно по кругу
+    // радиус в зависимости от индекса
+    let radius = (minSide / 3) + (i % 2) * 40; 
+    let angle = (i / planetsEls.length) * Math.PI * 2 + (i * 0.3);
+
     let baseX = cx + Math.cos(angle) * radius - planet.offsetWidth / 2;
     let baseY = cy + Math.sin(angle) * radius - planet.offsetHeight / 2;
+
+    // ограничим позиции, чтобы не вылезали
+    baseX = Math.max(20, Math.min(baseX, map.offsetWidth - planet.offsetWidth - 20));
+    baseY = Math.max(20, Math.min(baseY, map.offsetHeight - planet.offsetHeight - 20));
 
     return {
       el: planet,
