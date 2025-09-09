@@ -45,6 +45,11 @@ body {
   box-shadow: 0 0 20px rgba(0,200,255,0.5);
   backdrop-filter: blur(8px);
 }
+.dialog-box p {
+  white-space: pre-wrap; /* сохраняет переносы и делает авторазбивку */
+  word-wrap: break-word; /* ломает длинные слова */
+  max-width: 100%;
+}
 .btn {
   margin: 20px;
   padding: 15px 30px;
