@@ -7,10 +7,8 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Фон космоса -->
   <div id="stars"></div>
 
-  <!-- Экраны -->
   <div id="loading" class="screen active">
     <h2>Синхронизация с Источником...</h2>
     <p id="progress">0%</p>
@@ -76,9 +74,7 @@
 
   <!-- vkBridge -->
   <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
-  <script>
-    vkBridge.send('VKWebAppInit');
-  </script>
+  <script>vkBridge.send('VKWebAppInit');</script>
 
   <!-- particles.js -->
   <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
@@ -94,7 +90,6 @@
     });
   </script>
 
-  <!-- Логика игры -->
-  <script src="script.js?v=3"></script>
+  <script src="script.js?v=4"></script>
 </body>
 </html>

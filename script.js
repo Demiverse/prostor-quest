@@ -40,12 +40,7 @@ function typeText(elementId, text, speed = 40) {
 // Музыка
 const music = document.getElementById("bg-music");
 const musicBtn = document.getElementById("music-toggle");
-let musicPlaying = true; // сразу true
-
-window.addEventListener("load", () => {
-  music.play();
-  musicBtn.textContent = "🔊";
-});
+let musicPlaying = false;
 
 musicBtn.onclick = () => {
   if (musicPlaying) {
@@ -64,9 +59,12 @@ function startJourney() {
     "Я — Хранитель. Пять Аспектов ждут тебя. Лишь собрав их вместе, ты сможешь зажечь Источник и противостоять Критику."
   );
   if (!musicPlaying) {
-    music.play();
-    musicBtn.textContent = "🔊";
-    musicPlaying = true;
+    music.play().then(() => {
+      musicBtn.textContent = "🔊";
+      musicPlaying = true;
+    }).catch(err => {
+      console.log("Автовоспроизведение заблокировано:", err);
+    });
   }
 }
 
@@ -123,14 +121,16 @@ function ending(choice) {
   }
 }
 
-// Размещение планет по кругу (с лёгкой случайностью)
+// Размещение планет по кругу с разным радиусом
 function positionPlanets() {
   const map = document.querySelector(".map");
   const planets = map.querySelectorAll(".aspect-btn");
-  const radius = map.offsetWidth / 2 - 80;
+  const radiusMin = map.offsetWidth / 2 - 150;
+  const radiusMax = map.offsetWidth / 2 - 60;
 
   planets.forEach((planet, i) => {
-    let angle = (Math.PI * 2 / planets.length) * i + (Math.random() * 0.5);
+    let angle = (Math.PI * 2 / planets.length) * i;
+    let radius = radiusMin + Math.random() * (radiusMax - radiusMin);
     let x = Math.cos(angle) * radius + map.offsetWidth/2 - planet.offsetWidth/2;
     let y = Math.sin(angle) * radius + map.offsetHeight/2 - planet.offsetHeight/2;
     planet.style.left = x + "px";
