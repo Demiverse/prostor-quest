@@ -84,10 +84,9 @@ function showScreen(screenName) {
 }
 
 function loadStory(index) {
-    // ВАЖНО: Не проверяем победу при каждой загрузке истории!
-    if (index >= gameData.story.length) {
-        // Только в конце истории проверяем победу
-        checkForVictory();
+    // Проверяем, что индекс в пределах истории
+    if (index < 0 || index >= gameData.story.length) {
+        console.log('Индекс за пределами истории:', index);
         return;
     }
     
@@ -96,6 +95,7 @@ function loadStory(index) {
     
     updateStoryUI(storyStep);
     
+    // Если в этом шаге есть головоломка, запускаем ее с задержкой
     if (storyStep.puzzle) {
         setTimeout(() => {
             startPuzzle(storyStep.puzzle);
@@ -148,7 +148,15 @@ function updateStoryUI(storyStep) {
             const button = document.createElement('button');
             button.className = 'choice-btn';
             button.textContent = 'Далее →';
-            button.onclick = () => loadStory(gameState.storyIndex + 1);
+            button.onclick = () => {
+                // Проверяем, есть ли следующий шаг
+                if (gameState.storyIndex + 1 < gameData.story.length) {
+                    loadStory(gameState.storyIndex + 1);
+                } else {
+                    // Если это конец истории, проверяем победу
+                    checkForVictory();
+                }
+            };
             choicesContainer.appendChild(button);
         }
     }
@@ -163,7 +171,12 @@ function handleChoice(choice) {
             loadStory(nextIndex);
         }
     } else {
-        loadStory(gameState.storyIndex + 1);
+        // Просто переходим к следующему шагу
+        if (gameState.storyIndex + 1 < gameData.story.length) {
+            loadStory(gameState.storyIndex + 1);
+        } else {
+            checkForVictory();
+        }
     }
 }
 
@@ -209,14 +222,8 @@ function puzzleSuccess(puzzleType) {
     
     updateProgress();
     
-    // Переходим к следующей истории только после головоломки
-    const nextIndex = gameState.storyIndex + 1;
-    if (nextIndex < gameData.story.length) {
-        loadStory(nextIndex);
-    } else {
-        // Если это последняя история, проверяем победу
-        checkForVictory();
-    }
+    // Возвращаемся к игре после успешного решения головоломки
+    showScreen('game');
 }
 
 function updateProgress() {
@@ -243,7 +250,7 @@ function checkForVictory() {
         showVictory();
     } else {
         console.log('Еще не все головоломки пройдены, продолжаем игру');
-        // Если не все головоломки пройдены, возвращаемся к игре
+        // Если не все головоломки пройдены, остаемся на игровом экране
         showScreen('game');
     }
 }
