@@ -128,14 +128,23 @@ let pulse = 0;
 function initOrbits() {
   const map = document.querySelector(".map");
   const planets = map.querySelectorAll(".aspect-btn");
-  const baseRadius = Math.min(window.innerWidth, window.innerHeight) / 4;
+  const mapRect = map.getBoundingClientRect();
+  const cx = map.offsetWidth / 2;
+  const cy = map.offsetHeight / 2;
+
+  // Минимальный из половины ширины и высоты экрана
+  const maxRadius = Math.min(window.innerWidth, window.innerHeight) / 2;
 
   orbits = [];
   planets.forEach((planet, i) => {
+    const planetSize = planet.offsetWidth; // учитываем диаметр
     let angle = Math.random() * Math.PI * 2;
-    let radius = baseRadius + i * (baseRadius / 3);
+
+    // радиус = часть от maxRadius, но с учётом размера планеты
+    let radius = (maxRadius - planetSize / 2 - 20) * (0.3 + i * 0.12);
+
     let speed = 0.001 + Math.random() * 0.002;
-    orbits.push({planet, angle, radius, speed});
+    orbits.push({ planet, angle, radius, speed, cx, cy });
   });
 }
 
