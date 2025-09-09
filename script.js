@@ -40,7 +40,12 @@ function typeText(elementId, text, speed = 40) {
 // Музыка
 const music = document.getElementById("bg-music");
 const musicBtn = document.getElementById("music-toggle");
-let musicPlaying = false;
+let musicPlaying = true; // сразу true
+
+window.addEventListener("load", () => {
+  music.play();
+  musicBtn.textContent = "🔊";
+});
 
 musicBtn.onclick = () => {
   if (musicPlaying) {
