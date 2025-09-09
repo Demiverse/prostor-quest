@@ -171,38 +171,9 @@ function positionPlanets() {
 
     planet.style.left = finalX + "px";
     planet.style.top = finalY + "px";
-  });
-
-  drawLinks();
-}
-
-function drawLinks() {
-  const canvas = document.getElementById("links");
-  const ctx = canvas.getContext("2d");
-  const map = document.querySelector(".map");
-  canvas.width = map.offsetWidth;
-  canvas.height = map.offsetHeight;
-
-  const center = map.querySelector(".center");
-  const centerRect = center.getBoundingClientRect();
-  const mapRect = map.getBoundingClientRect();
-  const cx = centerRect.left - mapRect.left + center.offsetWidth/2;
-  const cy = centerRect.top - mapRect.top + center.offsetHeight/2;
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.strokeStyle = "rgba(0, 200, 255, 0.7)";
-  ctx.lineWidth = 2;
-  ctx.shadowBlur = 15;
-  ctx.shadowColor = "cyan";
-
-  document.querySelectorAll(".aspect-btn").forEach(p => {
-    const r = p.getBoundingClientRect();
-    const x = r.left - mapRect.left + p.offsetWidth/2;
-    const y = r.top - mapRect.top + p.offsetHeight/2;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(x, y);
-    ctx.stroke();
+    
+    // Уникальная задержка анимации для каждой планеты
+    planet.style.animationDelay = `${i * 0.5}s`;
   });
 }
 

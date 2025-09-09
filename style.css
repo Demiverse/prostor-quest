@@ -86,6 +86,8 @@ body {
   z-index: 2;
   text-align: center;
   word-wrap: break-word;
+  /* Анимация движения */
+  animation: float 6s ease-in-out infinite;
 }
 .aspect-btn {
   width: 70px;
@@ -103,19 +105,56 @@ body {
   background: radial-gradient(circle, #ff69b4 0%, #8a2be2 80%);
   font-size: 16px;
   box-shadow: 0 0 50px rgba(255,105,180,1), 0 0 100px rgba(138,43,226,0.8);
+  /* Центральная планета движется по-другому */
+  animation: pulse 4s ease-in-out infinite;
 }
 .completed {
   background: radial-gradient(circle, #7fff00 0%, #32cd32 80%) !important;
+  animation: glow 2s ease-in-out infinite alternate !important;
 }
-#links {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 1;
+
+/* Анимация плавающего движения */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-5px) rotate(1deg);
+  }
+  66% {
+    transform: translateY(5px) rotate(-1deg);
+  }
 }
+
+/* Анимация пульсации для центральной планеты */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 50px rgba(255,105,180,1), 0 0 100px rgba(138,43,226,0.8);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 70px rgba(255,105,180,1), 0 0 130px rgba(138,43,226,0.9);
+  }
+}
+
+/* Анимация свечения для завершённых планет */
+@keyframes glow {
+  from {
+    box-shadow: 0 0 25px rgba(127,255,0,0.8);
+  }
+  to {
+    box-shadow: 0 0 40px rgba(127,255,0,1), 0 0 60px rgba(50,205,50,0.6);
+  }
+}
+
+/* Разные задержки для анимации планет */
+.planet:nth-child(1) { animation-delay: 0s; }
+.planet:nth-child(2) { animation-delay: -1s; }
+.planet:nth-child(3) { animation-delay: -2s; }
+.planet:nth-child(4) { animation-delay: -3s; }
+.planet:nth-child(5) { animation-delay: -4s; }
+.planet:nth-child(6) { animation-delay: -5s; }
 
 /* Медиа-запросы для адаптивности */
 @media (max-width: 768px) {
@@ -154,5 +193,18 @@ body {
   .dialog-box {
     font-size: 16px;
     padding: 15px;
+  }
+  
+  /* Меньшая амплитуда движения на мобильных */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    33% {
+      transform: translateY(-3px) rotate(0.5deg);
+    }
+    66% {
+      transform: translateY(3px) rotate(-0.5deg);
+    }
   }
 }
