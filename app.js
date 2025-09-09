@@ -1,4 +1,4 @@
-// app.js (финальная версия с рестартом и автообновлением прогресса)
+// app.js (финальная версия с исправленным сюжетом)
 
 // -------------------
 // Глобальное состояние
@@ -139,9 +139,8 @@ function updateStoryUI(storyStep) {
 function handleChoice(choice) {
     if (choice.puzzle) {
         startPuzzle(choice.puzzle);
-    } else if (choice.next) {
-        const nextIndex = gameData.story.findIndex(s => s.id === choice.next);
-        if (nextIndex !== -1) loadStory(nextIndex);
+    } else if (choice.next !== undefined) {
+        loadStory(choice.next);
     } else {
         const nextIndex = gameState.storyIndex + 1;
         if (nextIndex < gameData.story.length) loadStory(nextIndex);
@@ -235,7 +234,7 @@ function restartGame() {
     gameState.activePuzzle = null;
     gameState.startTime = Date.now();
 
-    // сброс прогресса на экране
+    // сброс прогресса
     document.getElementById('progress-fill').style.width = '0%';
     document.getElementById('progress-percent').textContent = '0';
     document.getElementById('puzzles-completed').textContent = `0/${Object.keys(gameData.puzzles).length}`;
@@ -244,11 +243,10 @@ function restartGame() {
     // показываем загрузочный экран
     showScreen('loading');
 
-    // сбросим полоску загрузки
+    // сброс полоски загрузки
     const progressBar = document.querySelector('.loading-progress');
     if (progressBar) progressBar.style.width = '0%';
 
-    // снова запустим загрузку → переход к игре
     simulateLoading();
 }
 
@@ -264,25 +262,41 @@ const gameData = {
         show: { name: 'АСПЕКТ ШОУ', emoji: '🎭' }
     },
     story: [
-        { character: 'system', text: 'ТРЕВОГА! Творческое ядро атаковано.', choices: [] },
-        { character: 'mentor', text: 'Стажер, ты наш последний шанс!', choices: [] },
-        { character: 'mentor', text: 'Выбери, с чего начнем:', choices: [
-            { text: 'Дизайн 🎨', puzzle: 'design' },
-            { text: 'Музыка 🎵', puzzle: 'music' },
-            { text: 'Шоу 🎭', puzzle: 'show' }
-        ]},
+        { 
+            character: 'system', 
+            text: '⚠️ ТРЕВОГА! Творческое ядро атаковано.', 
+            choices: [{ text: "Продолжить", next: 1 }] 
+        },
+        { 
+            character: 'mentor', 
+            text: 'Стажер, ты наш последний шанс восстановить Простор!', 
+            choices: [{ text: "Я готов!", next: 2 }] 
+        },
+        { 
+            character: 'mentor', 
+            text: 'С чего начнём?', 
+            choices: [
+                { text: 'Дизайн 🎨', puzzle: 'design' },
+                { text: 'Музыка 🎵', puzzle: 'music' },
+                { text: 'Шоу 🎭', puzzle: 'show' }
+            ] 
+        },
+
         { character: 'design', text: 'Я, Аспект Дизайна, жду твоего испытания!', puzzle: 'design', choices: [] },
-        { character: 'design', text: 'Потрясающе! Я снова с вами!', choices: [] },
-        { character: 'mentor', text: 'Выбери следующий:', choices: [
+        { character: 'design', text: 'Потрясающе! Я снова с вами!', choices: [{ text: "Дальше", next: 5 }] },
+
+        { character: 'mentor', text: 'Выбери следующий аспект:', choices: [
             { text: 'Музыка 🎵', puzzle: 'music' },
             { text: 'Шоу 🎭', puzzle: 'show' }
         ]},
         { character: 'music', text: 'Я, Аспект Музыки, готов к испытанию!', puzzle: 'music', choices: [] },
-        { character: 'music', text: 'Великолепно! Я в строю!', choices: [] },
-        { character: 'mentor', text: 'Остался последний Аспект!', choices: [{ text: 'Шоу 🎭', puzzle: 'show' }]},
+        { character: 'music', text: 'Великолепно! Я в строю!', choices: [{ text: "Дальше", next: 8 }] },
+
+        { character: 'mentor', text: 'Остался последний аспект — Шоу!', choices: [{ text: 'Перейти к Шоу 🎭', puzzle: 'show' }] },
         { character: 'show', text: 'Я, Аспект Шоу, жду испытания!', puzzle: 'show', choices: [] },
-        { character: 'show', text: 'Браво! Я снова с вами!', choices: [] },
-        { character: 'mentor', text: 'Ты восстановил все аспекты творчества!', choices: [] }
+        { character: 'show', text: 'Браво! Я снова с вами!', choices: [{ text: "Финал", next: 11 }] },
+
+        { character: 'mentor', text: '🎉 Ты восстановил все аспекты творчества! Простор спасён!', choices: [] }
     ],
     puzzles: {
         design: {
