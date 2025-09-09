@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>Простор: Код Единства — VK Mini App</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+    <link rel="stylesheet" href="style.css" />
+    <!-- VK Bridge -->
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+</head>
+<body>
+<div class="app" id="app">
+    <!-- Загрузка -->
+    <div id="screen-loading" class="screen active">
+        <div class="loading-content">
+            <div class="logo">ПРОСТОР</div>
+            <div class="loading-bar"><div class="loading-progress"></div></div>
+            <p class="loading-text">Подключаемся к творческому ядру...</p>
+            <div class="platform-badge" id="platform-badge">Инициализация...</div>
+        </div>
+    </div>
+
+    <!-- Игровой экран -->
+    <div id="screen-game" class="screen">
+        <div class="header">
+            <button class="menu-btn" onclick="toggleMenu()">☰</button>
+            <div class="header-title">Код Единства</div>
+            <button class="sound-btn" id="sound-toggle" onclick="toggleSound()">🔊</button>
+        </div>
+
+        <div class="game-content">
+            <div class="character-container">
+                <div id="character-image" class="character-image">
+                    <span class="character-emoji">⚡</span>
+                </div>
+            </div>
+
+            <div class="dialog-container fade-in">
+                <div class="character-name" id="character-name">СИСТЕМА</div>
+                <div class="dialog-text" id="dialog-text">Загрузка диалога...</div>
+            </div>
+
+            <div class="choices-container" id="choices-container"></div>
+        </div>
+
+        <div class="game-footer">
+            <div class="progress-container">
+                <div class="progress-text">Восстановление: <span id="progress-percent">0</span>%</div>
+                <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Экран головоломки -->
+    <div id="screen-puzzle" class="screen">
+        <div class="header">
+            <button class="back-btn" onclick="backToGame()">← Назад</button>
+            <div class="header-title" id="puzzle-title">Испытание</div>
+            <div class="header-spacer"></div>
+        </div>
+
+        <div class="puzzle-content">
+            <div class="puzzle-header">
+                <p id="puzzle-description">Реши задание, чтобы продолжить</p>
+            </div>
+            <div class="puzzle-body" id="puzzle-body"></div>
+            <div class="puzzle-actions">
+                <button class="puzzle-button" onclick="checkPuzzle()"><span class="btn-icon">✓</span><span class="btn-text">Проверить</span></button>
+                <button class="puzzle-button secondary" onclick="showHint()"><span class="btn-icon">💡</span><span class="btn-text">Подсказка</span></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Экран победы -->
+    <div id="screen-victory" class="screen">
+        <div class="victory-content">
+            <div class="victory-animation">🎉</div>
+            <h1>МИССИЯ ВЫПОЛНЕНА!</h1>
+            <p>Ты восстановил единство Простора</p>
+            <div class="victory-stats">
+                <div class="stat-item"><span class="stat-icon">⏱️</span><span class="stat-value" id="completion-time">00:00</span></div>
+                <div class="stat-item"><span class="stat-icon">✅</span><span class="stat-value" id="puzzles-completed">0/0</span></div>
+            </div>
+            <div class="victory-actions">
+                <button class="victory-btn primary" onclick="shareResult()"><span class="btn-icon">📤</span><span class="btn-text">Поделиться победой</span></button>
+                <button class="victory-btn secondary" onclick="restartGame()"><span class="btn-icon">🔄</span><span class="btn-text">Начать заново</span></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Боковое меню -->
+    <div id="side-menu" class="side-menu">
+        <div class="menu-content">
+            <div class="menu-header">
+                <h3>Меню</h3>
+                <button class="close-menu" onclick="toggleMenu()">×</button>
+            </div>
+            <div class="menu-items">
+                <button class="menu-item" onclick="restartGame()">🔄 Начать заново</button>
+                <button class="menu-item" onclick="toggleSound()"><span id="sound-icon">🔊</span> Звук</button>
+                <button class="menu-item" onclick="shareResult()">📤 Поделиться</button>
+                <button class="menu-item" onclick="showHelp()">❓ Помощь</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Аудио -->
+<audio id="click-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" preload="auto"></audio>
+<audio id="success-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-success-bell-893.mp3" preload="auto"></audio>
+<audio id="background-music" loop preload="auto">
+    <source src="https://assets.mixkit.co/music/preview/mixkit-spooky-ambience-927.mp3" type="audio/mpeg">
+</audio>
+
+<script src="app.js?v=2.0.0"></script>
+</body>
+</html>
