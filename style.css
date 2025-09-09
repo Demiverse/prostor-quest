@@ -85,22 +85,23 @@ body {
   z-index: 2;
 }
 .aspect-btn {
-  width: 80px;
-  height: 80px;
+  width: 70px;
+  height: 70px;
   background: radial-gradient(circle, #fff 0%, #1e90ff 80%);
+  font-size: 14px;
 }
 .aspect-btn:hover {
   transform: scale(1.2);
   box-shadow: 0 0 40px rgba(255,255,255,1);
 }
 .center {
-  width: 140px;
-  height: 140px;
+  width: 120px;
+  height: 120px;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
   background: radial-gradient(circle, #ff69b4 0%, #8a2be2 80%);
-  font-size: 18px;
+  font-size: 16px;
   box-shadow: 0 0 50px rgba(255,105,180,1), 0 0 100px rgba(138,43,226,0.8);
 }
 .completed {

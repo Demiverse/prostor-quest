@@ -121,22 +121,21 @@ function ending(choice) {
   }
 }
 
-// Орбиты и вращение планет
+// Орбиты и вращение с пульсацией
 let orbits = [];
+let pulse = 0;
 
 function initOrbits() {
   const map = document.querySelector(".map");
   const planets = map.querySelectorAll(".aspect-btn");
-  const mapRect = map.getBoundingClientRect();
-  const cx = map.offsetWidth / 2;
-  const cy = map.offsetHeight / 2;
+  const baseRadius = Math.min(window.innerWidth, window.innerHeight) / 4;
 
   orbits = [];
   planets.forEach((planet, i) => {
     let angle = Math.random() * Math.PI * 2;
-    let radius = 150 + i * 70; // разные орбиты
-    let speed = 0.001 + Math.random() * 0.002; // разная скорость
-    orbits.push({planet, angle, radius, speed, cx, cy});
+    let radius = baseRadius + i * (baseRadius / 3);
+    let speed = 0.001 + Math.random() * 0.002;
+    orbits.push({planet, angle, radius, speed});
   });
 }
 
@@ -147,10 +146,14 @@ function animateOrbits() {
   canvas.height = window.innerHeight;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.strokeStyle = "rgba(0, 200, 255, 0.6)";
+
+  // пульсация
+  pulse += 0.05;
+  const glow = 128 + Math.floor(Math.sin(pulse) * 127);
+  ctx.strokeStyle = `rgba(0, ${glow}, 255, 0.7)`;
   ctx.lineWidth = 2;
-  ctx.shadowBlur = 15;
-  ctx.shadowColor = "cyan";
+  ctx.shadowBlur = 20;
+  ctx.shadowColor = `rgba(0, ${glow}, 255, 1)`;
 
   const map = document.querySelector(".map");
   const mapRect = map.getBoundingClientRect();
