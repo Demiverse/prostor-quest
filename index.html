@@ -31,11 +31,13 @@
   <div id="map" class="screen">
     <h2>Созвездие Аспектов</h2>
     <div class="map">
-      <div id="form" class="aspect-btn" onclick="enterAspect('form')">Форма</div>
-      <div id="sound" class="aspect-btn" onclick="enterAspect('sound')">Звук</div>
-      <div id="narrative" class="aspect-btn" onclick="enterAspect('narrative')">Нарратив</div>
-      <div id="vision" class="aspect-btn" onclick="enterAspect('vision')">Видение</div>
-      <div id="will" class="aspect-btn" onclick="enterAspect('will')">Воля</div>
+      <div id="prostor" class="planet center" onclick="window.open('https://vk.com/prostor','_blank')">Простор</div>
+      <div id="form" class="planet aspect-btn" onclick="enterAspect('form')">Форма</div>
+      <div id="sound" class="planet aspect-btn" onclick="enterAspect('sound')">Звук</div>
+      <div id="narrative" class="planet aspect-btn" onclick="enterAspect('narrative')">Нарратив</div>
+      <div id="vision" class="planet aspect-btn" onclick="enterAspect('vision')">Видение</div>
+      <div id="will" class="planet aspect-btn" onclick="enterAspect('will')">Воля</div>
+      <canvas id="links"></canvas>
     </div>
   </div>
 
@@ -93,6 +95,6 @@
   </script>
 
   <!-- Логика игры -->
-  <script src="script.js?v=2"></script>
+  <script src="script.js?v=3"></script>
 </body>
 </html>
