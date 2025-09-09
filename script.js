@@ -131,15 +131,23 @@ function positionPlanets() {
   const centerX = mapWidth / 2;
   const centerY = mapHeight / 2;
 
-  const minOrbit = 200;   // первая орбита
-  const orbitStep = 120;  // шаг между орбитами
+  // вычисляем максимально допустимый радиус (чтобы не залезали за экран)
+  const padding = 80; // минимальный отступ от краёв
+  const maxRadius = Math.min(mapWidth, mapHeight) / 2 - padding;
+
+  // делим это расстояние на количество орбит
+  const orbitStep = maxRadius / (planets.length + 1);
 
   planets.forEach((planet, i) => {
-    let angle = Math.random() * Math.PI * 2;     // случайный угол
-    let radius = minOrbit + i * orbitStep;       // своя орбита для каждой планеты
+    const angle = Math.random() * Math.PI * 2; // случайный угол
+    const radius = orbitStep * (i + 1);        // орбита зависит от индекса
 
     let x = Math.cos(angle) * radius + centerX - planet.offsetWidth / 2;
     let y = Math.sin(angle) * radius + centerY - planet.offsetHeight / 2;
+
+    // ограничение (на всякий случай)
+    x = Math.max(0, Math.min(x, mapWidth - planet.offsetWidth));
+    y = Math.max(0, Math.min(y, mapHeight - planet.offsetHeight));
 
     planet.style.left = x + "px";
     planet.style.top = y + "px";
