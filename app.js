@@ -16,26 +16,23 @@ let gameState = {
 async function initGame() {
     console.log('Инициализация игры...');
     
-    // 1. Инициализация VK Bridge для Mini Apps - ВАЖНО: Первым делом!
+    // 1. Инициализация VK Bridge для Mini Apps
     try {
         if (typeof vkBridge !== 'undefined') {
-            // Отправляем событие инициализации сразу же
             await vkBridge.send('VKWebAppInit');
             gameState.vkBridgeInitialized = true;
             gameState.isVKApp = true;
             console.log('VK Bridge инициализирован');
             
-            // Пробуем получить информацию о пользователе
             try {
                 const userInfo = await vkBridge.send('VKWebAppGetUserInfo');
                 gameState.playerName = userInfo.first_name;
             } catch (e) {
-                console.log('Не удалось получить информацию о пользователе, используем значение по умолчанию');
+                console.log('Не удалось получить информацию о пользователе');
             }
         }
     } catch (error) {
         console.error('Ошибка инициализации VK Bridge:', error);
-        // Не прерываем выполнение, работаем в браузерном режиме
     }
     
     // 2. Определяем платформу
@@ -68,21 +65,17 @@ function simulateLoading() {
             setTimeout(() => {
                 gameState.startTime = Date.now();
                 showScreen('game');
-                loadStory(0); // Начинаем с первой истории
+                loadStory(0);
             }, 500);
         }
     }, 50);
 }
 
 function showScreen(screenName) {
-    console.log('Переключаем экран на:', screenName);
-    
-    // Скрываем все экраны
     document.querySelectorAll('.screen').forEach(screen => {
         screen.classList.remove('active');
     });
     
-    // Показываем нужный экран
     const screen = document.getElementById('screen-' + screenName);
     if (screen) {
         screen.classList.add('active');
@@ -91,12 +84,10 @@ function showScreen(screenName) {
 }
 
 function loadStory(index) {
-    console.log('Загружаем историю:', index, '/', gameData.story.length);
-    
-    // Проверяем, не достигли ли конца истории
+    // ВАЖНО: Не проверяем победу при каждой загрузке истории!
     if (index >= gameData.story.length) {
-        console.log('Конец истории, проверяем победу...');
-        checkForVictory(); // Проверяем условия победы
+        // Только в конце истории проверяем победу
+        checkForVictory();
         return;
     }
     
@@ -119,7 +110,6 @@ function updateStoryUI(storyStep) {
     const dialogText = document.getElementById('dialog-text');
     const choicesContainer = document.getElementById('choices-container');
     
-    // Обновляем персонажа
     if (characterImage && character.emoji) {
         characterImage.querySelector('.character-emoji').textContent = character.emoji;
     }
@@ -128,12 +118,10 @@ function updateStoryUI(storyStep) {
         characterName.textContent = character.name;
     }
     
-    // Обновляем текст
     if (dialogText) {
         dialogText.textContent = storyStep.text;
     }
     
-    // Очищаем и создаем кнопки выбора
     if (choicesContainer) {
         choicesContainer.innerHTML = '';
         
@@ -143,8 +131,8 @@ function updateStoryUI(storyStep) {
                 button.className = 'choice-btn';
                 button.textContent = choice.text;
                 
-                // Проверяем, не пройдена ли уже эта головоломка
-                const isPuzzleCompleted = choice.puzzle ? gameState.completedPuzzles.includes(choice.puzzle) : false;
+                const isPuzzleCompleted = choice.puzzle ? 
+                    gameState.completedPuzzles.includes(choice.puzzle) : false;
                 
                 if (isPuzzleCompleted) {
                     button.disabled = true;
@@ -157,7 +145,6 @@ function updateStoryUI(storyStep) {
                 choicesContainer.appendChild(button);
             });
         } else {
-            // Кнопка "Далее" по умолчанию
             const button = document.createElement('button');
             button.className = 'choice-btn';
             button.textContent = 'Далее →';
@@ -168,8 +155,6 @@ function updateStoryUI(storyStep) {
 }
 
 function handleChoice(choice) {
-    console.log('Выбран вариант:', choice.text);
-    
     if (choice.puzzle) {
         startPuzzle(choice.puzzle);
     } else if (choice.next) {
@@ -178,21 +163,14 @@ function handleChoice(choice) {
             loadStory(nextIndex);
         }
     } else {
-        // Просто переходим к следующей истории
         loadStory(gameState.storyIndex + 1);
     }
 }
 
 function startPuzzle(puzzleType) {
-    console.log('Запускаем головоломку:', puzzleType);
-    
     const puzzle = gameData.puzzles[puzzleType];
-    if (!puzzle) {
-        console.error('Головоломка не найдена:', puzzleType);
-        return;
-    }
+    if (!puzzle) return;
     
-    // Обновляем интерфейс головоломки
     document.getElementById('puzzle-title').textContent = puzzle.title;
     document.getElementById('puzzle-description').textContent = puzzle.description;
     
@@ -200,19 +178,15 @@ function startPuzzle(puzzleType) {
     if (puzzleBody) {
         puzzleBody.innerHTML = puzzle.content;
         
-        // Инициализируем головоломку, если есть функция init
         if (puzzle.init && typeof puzzle.init === 'function') {
             puzzle.init();
         }
     }
     
-    // Переключаемся на экран головоломки
     showScreen('puzzle');
 }
 
 function checkPuzzle() {
-    console.log('Проверяем головоломку...');
-    
     const currentStory = gameData.story[gameState.storyIndex];
     if (!currentStory || !currentStory.puzzle) return;
     
@@ -221,27 +195,28 @@ function checkPuzzle() {
     
     if (puzzle && typeof puzzle.check === 'function') {
         if (puzzle.check()) {
-            // Головоломка решена!
             puzzleSuccess(puzzleType);
         } else {
-            alert('Попробуй еще раз! Правильный порядок: Красный, Оранжевый, Желтый, Зеленый, Синий');
+            alert('Попробуй еще раз!');
         }
     }
 }
 
 function puzzleSuccess(puzzleType) {
-    console.log('Головоломка пройдена:', puzzleType);
-    
-    // Добавляем в пройденные
     if (!gameState.completedPuzzles.includes(puzzleType)) {
         gameState.completedPuzzles.push(puzzleType);
     }
     
     updateProgress();
     
-    // Переходим к следующей истории
+    // Переходим к следующей истории только после головоломки
     const nextIndex = gameState.storyIndex + 1;
-    loadStory(nextIndex);
+    if (nextIndex < gameData.story.length) {
+        loadStory(nextIndex);
+    } else {
+        // Если это последняя история, проверяем победу
+        checkForVictory();
+    }
 }
 
 function updateProgress() {
@@ -249,33 +224,31 @@ function updateProgress() {
     const completed = gameState.completedPuzzles.length;
     const percent = Math.round((completed / totalPuzzles) * 100);
     
-    // Обновляем прогресс бар
     const progressFill = document.getElementById('progress-fill');
     const progressPercent = document.getElementById('progress-percent');
     
     if (progressFill) progressFill.style.width = percent + '%';
     if (progressPercent) progressPercent.textContent = percent;
-    
-    // Проверяем победу после обновления прогресса
-    checkForVictory();
 }
 
 function checkForVictory() {
     const totalPuzzles = Object.keys(gameData.puzzles).length;
     const completed = gameState.completedPuzzles.length;
     
-    console.log(`Проверка победы: ${completed}/${totalPuzzles} головоломок пройдено`);
+    console.log(`Проверка победы: ${completed}/${totalPuzzles}`);
     
     // Показываем победу ТОЛЬКО если пройдены ВСЕ головоломки
     if (completed >= totalPuzzles && totalPuzzles > 0) {
         console.log('Все головоломки пройдены, показываем победу!');
         showVictory();
+    } else {
+        console.log('Еще не все головоломки пройдены, продолжаем игру');
+        // Если не все головоломки пройдены, возвращаемся к игре
+        showScreen('game');
     }
 }
 
 function showVictory() {
-    console.log('Показываем экран победы!');
-    
     const timeSpent = Date.now() - gameState.startTime;
     const minutes = Math.floor(timeSpent / 60000);
     const seconds = Math.floor((timeSpent % 60000) / 1000);
@@ -315,8 +288,6 @@ async function shareResult() {
 }
 
 function restartGame() {
-    console.log('Перезапускаем игру...');
-    
     gameState.storyIndex = 0;
     gameState.completedPuzzles = [];
     gameState.startTime = Date.now();
@@ -470,7 +441,6 @@ const gameData = {
                 </div>
             `,
             init: function() {
-                // Инициализация перетаскивания для головоломки с цветами
                 const puzzleContainer = document.getElementById('color-puzzle');
                 let draggedItem = null;
                 
@@ -506,7 +476,6 @@ const gameData = {
                 });
             },
             check: function() {
-                // Проверяем правильный порядок цветов
                 const colors = Array.from(document.querySelectorAll('#color-puzzle > div'))
                     .map(item => item.getAttribute('data-color'));
                 
@@ -538,11 +507,11 @@ const gameData = {
                         const note = this.getAttribute('data-note');
                         sequence.push(note);
                         
-                        // Проверяем последовательность
                         if (sequence.length === correctSequence.length) {
                             if (JSON.stringify(sequence) === JSON.stringify(correctSequence)) {
                                 alert('Правильно! Мелодия восстановлена!');
-                                return true;
+                                // Вызываем проверку для перехода дальше
+                                checkPuzzle();
                             } else {
                                 alert('Неправильная последовательность! Попробуй еще раз.');
                                 sequence = [];
@@ -552,7 +521,7 @@ const gameData = {
                 });
             },
             check: function() {
-                // Для простоты всегда возвращаем true, так как проверка в init
+                // Всегда true, так как проверка в init
                 return true;
             }
         },
@@ -576,6 +545,8 @@ const gameData = {
                         const isCorrect = this.getAttribute('data-correct') === 'true';
                         if (isCorrect) {
                             alert('Правильно! Сценарий восстановлен!');
+                            // Вызываем проверку для перехода дальше
+                            checkPuzzle();
                         } else {
                             alert('Неправильный выбор! Попробуй еще раз.');
                         }
@@ -583,7 +554,7 @@ const gameData = {
                 });
             },
             check: function() {
-                // Для простоты всегда возвращаем true, так как проверка в init
+                // Всегда true, так как проверка в init
                 return true;
             }
         }
