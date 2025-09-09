@@ -125,17 +125,31 @@ function ending(choice) {
 function positionPlanets() {
   const map = document.querySelector(".map");
   const planets = map.querySelectorAll(".aspect-btn");
-  const radiusMin = map.offsetWidth / 2 - 150;
-  const radiusMax = map.offsetWidth / 2 - 60;
 
-  planets.forEach((planet, i) => {
-    let angle = (Math.PI * 2 / planets.length) * i;
-    let radius = radiusMin + Math.random() * (radiusMax - radiusMin);
-    let x = Math.cos(angle) * radius + map.offsetWidth/2 - planet.offsetWidth/2;
-    let y = Math.sin(angle) * radius + map.offsetHeight/2 - planet.offsetHeight/2;
+  const mapWidth = map.offsetWidth;
+  const mapHeight = map.offsetHeight;
+
+  const centerX = mapWidth / 2;
+  const centerY = mapHeight / 2;
+
+  const padding = 100; // отступы от краёв
+  const maxRadius = Math.min(mapWidth, mapHeight) / 2 - padding;
+
+  planets.forEach((planet) => {
+    let angle = Math.random() * Math.PI * 2;
+    let radius = Math.random() * maxRadius;
+
+    let x = Math.cos(angle) * radius + centerX - planet.offsetWidth / 2;
+    let y = Math.sin(angle) * radius + centerY - planet.offsetHeight / 2;
+
+    // не вылезать за экран
+    x = Math.max(0, Math.min(x, mapWidth - planet.offsetWidth));
+    y = Math.max(0, Math.min(y, mapHeight - planet.offsetHeight));
+
     planet.style.left = x + "px";
     planet.style.top = y + "px";
   });
+
   drawLinks();
 }
 
