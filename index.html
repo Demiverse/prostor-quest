@@ -2,13 +2,9 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Созвездие Аспектов</title>
   <link rel="stylesheet" href="style.css" />
-  <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
-  <script>
-    vkBridge.send('VKWebAppInit');
-  </script>
 </head>
 <body>
   <div class="map">
@@ -20,7 +16,7 @@
     <div class="aspect-btn">Видение</div>
     <div class="aspect-btn">Воля</div>
   </div>
-  <audio id="bg-music" src="music.mp3" loop></audio>
+  <audio id="bg-music" src="music.mp3" autoplay loop></audio>
   <script src="script.js"></script>
 </body>
 </html>
