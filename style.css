@@ -69,13 +69,8 @@ body {
 }
 .map {
   position: relative;
-  width: 90vw;
-  max-width: 600px;
-  height: 90vw;
-  max-height: 600px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.05);
-  box-shadow: inset 0 0 30px rgba(255,255,255,0.2), 0 0 60px rgba(200, 0, 255, 0.4);
+  width: 100vw;
+  height: 100vh;
 }
 .planet {
   position: absolute;
