@@ -1,11 +1,3 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Сингулярность Простора</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
 <body>
   <!-- Экран загрузки -->
   <div id="loading" class="screen active">
@@ -16,11 +8,9 @@
   <!-- Вступление -->
   <div id="intro" class="screen">
     <h1>Сингулярность Простора</h1>
-    <p>
-      Давным-давно Источник раскололся на пять Аспектов.<br/>
-      Теперь лишь ты способен вновь соединить их.<br/>
-      Осмелишься ступить на Путь?
-    </p>
+    <div class="dialog-box" id="intro-dialog">
+      <p id="dialog-text">...</p>
+    </div>
     <button class="btn" onclick="showScreen('map')">Отправиться в путь</button>
   </div>
 
@@ -47,11 +37,10 @@
   <!-- Финал -->
   <div id="final" class="screen">
     <h2>Хранитель раскрывает истину...</h2>
-    <p>
-      Всё это время он был Критиком.<br/>
-      Его слова звучат: «Каждый Аспект самодостаточен.<br/>
-      Стань со мной — и мир будет свободен от единства».  
-    </p>
+    <div class="dialog-box">
+      <p>Он и есть Критик. «Каждый Аспект самодостаточен.  
+      Присоединись ко мне — и мир обретёт хаос без уз.»</p>
+    </div>
     <button class="btn" onclick="ending('chaos')">Принять сторону Критика</button>
     <button class="btn" onclick="ending('harmony')">Силой Аспектов победить его</button>
   </div>
@@ -59,22 +48,17 @@
   <!-- Концовка -->
   <div id="ending" class="screen">
     <h2 id="ending-title"></h2>
-    <p id="ending-text"></p>
+    <div class="dialog-box">
+      <p id="ending-text"></p>
+    </div>
   </div>
 
   <!-- VK Bridge -->
   <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
   <script>
-    // Инициализация VK Mini Apps
     vkBridge.send('VKWebAppInit');
-
-    // Для отладки (можно удалить)
-    vkBridge.send('VKWebAppGetLaunchParams').then(data => {
-      console.log('Launch params:', data);
-    });
   </script>
 
   <!-- Скрипт игры -->
   <script src="script.js"></script>
 </body>
-</html>
