@@ -1,4 +1,4 @@
-// app.js (полная версия с gameData + отладкой)
+// app.js (финальная версия с рестартом и автообновлением прогресса)
 
 // -------------------
 // Глобальное состояние
@@ -71,6 +71,7 @@ function simulateLoading() {
 }
 
 function showScreen(screenName) {
+    console.log("Переключение на экран:", screenName);
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const screen = document.getElementById('screen-' + screenName);
     if (screen) {
@@ -194,6 +195,9 @@ function updateProgress() {
 
     document.getElementById('progress-fill').style.width = percent + '%';
     document.getElementById('progress-percent').textContent = percent;
+
+    // обновляем на экране победы
+    document.getElementById('puzzles-completed').textContent = `${completed}/${totalPuzzles}`;
 }
 
 function checkForVictory() {
@@ -213,10 +217,39 @@ function showVictory() {
 
     document.getElementById('completion-time').textContent =
         `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    document.getElementById('puzzles-completed').textContent =
-        `${gameState.completedPuzzles.length}/${Object.keys(gameData.puzzles).length}`;
+
+    updateProgress(); // чтобы puzzles-completed было точным
 
     showScreen('victory');
+}
+
+// -------------------
+// Рестарт игры
+// -------------------
+function restartGame() {
+    console.log("🔄 Перезапуск игры...");
+
+    // сбрасываем состояние
+    gameState.storyIndex = 0;
+    gameState.completedPuzzles = [];
+    gameState.activePuzzle = null;
+    gameState.startTime = Date.now();
+
+    // сброс прогресса на экране
+    document.getElementById('progress-fill').style.width = '0%';
+    document.getElementById('progress-percent').textContent = '0';
+    document.getElementById('puzzles-completed').textContent = `0/${Object.keys(gameData.puzzles).length}`;
+    document.getElementById('completion-time').textContent = '00:00';
+
+    // показываем загрузочный экран
+    showScreen('loading');
+
+    // сбросим полоску загрузки
+    const progressBar = document.querySelector('.loading-progress');
+    if (progressBar) progressBar.style.width = '0%';
+
+    // снова запустим загрузку → переход к игре
+    simulateLoading();
 }
 
 // -------------------
