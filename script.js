@@ -37,11 +37,32 @@ function typeText(elementId, text, speed = 40) {
   el.onclick = finish;
 }
 
+// Музыка
+const music = document.getElementById("bg-music");
+const musicBtn = document.getElementById("music-toggle");
+let musicPlaying = false;
+
+musicBtn.onclick = () => {
+  if (musicPlaying) {
+    music.pause();
+    musicBtn.textContent = "🔇";
+  } else {
+    music.play();
+    musicBtn.textContent = "🔊";
+  }
+  musicPlaying = !musicPlaying;
+};
+
 function startJourney() {
   showScreen('dialog');
   typeText("dialog-text",
     "Я — Хранитель. Пять Аспектов ждут тебя. Лишь собрав их вместе, ты сможешь зажечь Источник и противостоять Критику."
   );
+  if (!musicPlaying) {
+    music.play();
+    musicBtn.textContent = "🔊";
+    musicPlaying = true;
+  }
 }
 
 const aspects = {
