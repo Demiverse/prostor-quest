@@ -20,11 +20,22 @@ function typeText(elementId, text, speed = 40) {
   let i = 0;
   let el = document.getElementById(elementId);
   el.innerText = "";
-  let interval = setInterval(() => {
+  let interval;
+
+  function finish() {
+    clearInterval(interval);
+    el.innerText = text;
+    el.onclick = null; // убираем обработчик после завершения
+  }
+
+  interval = setInterval(() => {
     el.innerText += text.charAt(i);
     i++;
-    if (i >= text.length) clearInterval(interval);
+    if (i >= text.length) finish();
   }, speed);
+
+  // возможность пропустить по клику
+  el.onclick = finish;
 }
 
 function startJourney() {
