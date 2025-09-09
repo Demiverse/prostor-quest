@@ -1,118 +1,179 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-    <title>Простор: Код Единства — VK Mini App</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
-    <link rel="stylesheet" href="style.css" />
-    <!-- VK Bridge -->
-    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Сингулярность Простора</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #0a0a0f;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .screen {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      max-width: 600px;
+    }
+    .active {
+      display: block;
+    }
+    .btn {
+      background: #1e90ff;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 20px;
+      margin: 10px;
+      font-size: 16px;
+      color: #fff;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .btn:hover {
+      background: #63b3ff;
+    }
+    .map {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .aspect-btn {
+      background: #222;
+      border: 2px solid #1e90ff;
+      border-radius: 50%;
+      width: 120px;
+      height: 120px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .aspect-btn:hover {
+      background: #1e90ff;
+    }
+    .completed {
+      background: #32cd32 !important;
+      border-color: #32cd32 !important;
+    }
+  </style>
 </head>
 <body>
-<div class="app" id="app">
-    <!-- Загрузка -->
-    <div id="screen-loading" class="screen active">
-        <div class="loading-content">
-            <div class="logo">ПРОСТОР</div>
-            <div class="loading-bar"><div class="loading-progress"></div></div>
-            <p class="loading-text">Подключаемся к творческому ядру...</p>
-            <div class="platform-badge" id="platform-badge">Инициализация...</div>
-        </div>
+
+  <!-- Экран загрузки -->
+  <div id="loading" class="screen active">
+    <h2>Синхронизация с Источником...</h2>
+    <p id="progress">0%</p>
+  </div>
+
+  <!-- Вступление -->
+  <div id="intro" class="screen">
+    <h1>Сингулярность Простора</h1>
+    <p>Ты чувствуешь зов? Пять Аспектов ждут тебя. Только собрав их вместе, можно зажечь Источник.</p>
+    <button class="btn" onclick="showScreen('map')">Отправиться в путь</button>
+  </div>
+
+  <!-- Карта -->
+  <div id="map" class="screen">
+    <h2>Выбери Аспект</h2>
+    <div class="map">
+      <div id="form" class="aspect-btn" onclick="enterAspect('form')">Форма</div>
+      <div id="sound" class="aspect-btn" onclick="enterAspect('sound')">Звук</div>
+      <div id="narrative" class="aspect-btn" onclick="enterAspect('narrative')">Нарратив</div>
+      <div id="vision" class="aspect-btn" onclick="enterAspect('vision')">Видение</div>
+      <div id="will" class="aspect-btn" onclick="enterAspect('will')">Воля</div>
     </div>
+  </div>
 
-    <!-- Игровой экран -->
-    <div id="screen-game" class="screen">
-        <div class="header">
-            <button class="menu-btn" onclick="toggleMenu()">☰</button>
-            <div class="header-title">Код Единства</div>
-            <button class="sound-btn" id="sound-toggle" onclick="toggleSound()">🔊</button>
-        </div>
+  <!-- Задания -->
+  <div id="aspect" class="screen">
+    <h2 id="aspect-title"></h2>
+    <p id="aspect-task"></p>
+    <button class="btn" onclick="completeAspect()">Завершить</button>
+  </div>
 
-        <div class="game-content">
-            <div class="character-container">
-                <div id="character-image" class="character-image">
-                    <span class="character-emoji">⚡</span>
-                </div>
-            </div>
+  <!-- Финал -->
+  <div id="final" class="screen">
+    <h2>Хранитель раскрывает истину...</h2>
+    <p>Он и есть Критик. Он предлагает тебе выбор.</p>
+    <button class="btn" onclick="ending('chaos')">Принять сторону Критика</button>
+    <button class="btn" onclick="ending('harmony')">Силой Аспектов победить его</button>
+  </div>
 
-            <div class="dialog-container fade-in">
-                <div class="character-name" id="character-name">СИСТЕМА</div>
-                <div class="dialog-text" id="dialog-text">Загрузка диалога...</div>
-            </div>
+  <!-- Концовка -->
+  <div id="ending" class="screen">
+    <h2 id="ending-title"></h2>
+    <p id="ending-text"></p>
+  </div>
 
-            <div class="choices-container" id="choices-container"></div>
-        </div>
+  <script>
+    let progress = 0;
+    let collected = {};
+    let currentAspect = null;
 
-        <div class="game-footer">
-            <div class="progress-container">
-                <div class="progress-text">Восстановление: <span id="progress-percent">0</span>%</div>
-                <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-            </div>
-        </div>
-    </div>
+    // Загрузка
+    let loader = setInterval(() => {
+      progress += 10;
+      document.getElementById('progress').innerText = progress + '%';
+      if (progress >= 100) {
+        clearInterval(loader);
+        showScreen('intro');
+      }
+    }, 200);
 
-    <!-- Экран головоломки -->
-    <div id="screen-puzzle" class="screen">
-        <div class="header">
-            <button class="back-btn" onclick="backToGame()">← Назад</button>
-            <div class="header-title" id="puzzle-title">Испытание</div>
-            <div class="header-spacer"></div>
-        </div>
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
 
-        <div class="puzzle-content">
-            <div class="puzzle-header">
-                <p id="puzzle-description">Реши задание, чтобы продолжить</p>
-            </div>
-            <div class="puzzle-body" id="puzzle-body"></div>
-            <div class="puzzle-actions">
-                <button class="puzzle-button" onclick="checkPuzzle()"><span class="btn-icon">✓</span><span class="btn-text">Проверить</span></button>
-                <button class="puzzle-button secondary" onclick="showHint()"><span class="btn-icon">💡</span><span class="btn-text">Подсказка</span></button>
-            </div>
-        </div>
-    </div>
+    function enterAspect(aspect) {
+      currentAspect = aspect;
+      showScreen('aspect');
+      const titles = {
+        form: 'Аспект Формы',
+        sound: 'Аспект Звука',
+        narrative: 'Аспект Нарратива',
+        vision: 'Аспект Видения',
+        will: 'Аспект Воли'
+      };
+      const tasks = {
+        form: 'Собери гармонию форм. (Задание-заглушка)',
+        sound: 'Найди правильную мелодию. (Задание-заглушка)',
+        narrative: 'Восстанови последовательность истории. (Задание-заглушка)',
+        vision: 'Заметь скрытый символ. (Задание-заглушка)',
+        will: 'Собери силу для завершения проекта. (Задание-заглушка)'
+      };
+      document.getElementById('aspect-title').innerText = titles[aspect];
+      document.getElementById('aspect-task').innerText = tasks[aspect];
+    }
 
-    <!-- Экран победы -->
-    <div id="screen-victory" class="screen">
-        <div class="victory-content">
-            <div class="victory-animation">🎉</div>
-            <h1>МИССИЯ ВЫПОЛНЕНА!</h1>
-            <p>Ты восстановил единство Простора</p>
-            <div class="victory-stats">
-                <div class="stat-item"><span class="stat-icon">⏱️</span><span class="stat-value" id="completion-time">00:00</span></div>
-                <div class="stat-item"><span class="stat-icon">✅</span><span class="stat-value" id="puzzles-completed">0/0</span></div>
-            </div>
-            <div class="victory-actions">
-                <button class="victory-btn primary" onclick="shareResult()"><span class="btn-icon">📤</span><span class="btn-text">Поделиться победой</span></button>
-                <button class="victory-btn secondary" onclick="restartGame()"><span class="btn-icon">🔄</span><span class="btn-text">Начать заново</span></button>
-            </div>
-        </div>
-    </div>
+    function completeAspect() {
+      collected[currentAspect] = true;
+      document.getElementById(currentAspect).classList.add('completed');
+      showScreen('map');
+      if (Object.keys(collected).length === 5) {
+        showScreen('final');
+      }
+    }
 
-    <!-- Боковое меню -->
-    <div id="side-menu" class="side-menu">
-        <div class="menu-content">
-            <div class="menu-header">
-                <h3>Меню</h3>
-                <button class="close-menu" onclick="toggleMenu()">×</button>
-            </div>
-            <div class="menu-items">
-                <button class="menu-item" onclick="restartGame()">🔄 Начать заново</button>
-                <button class="menu-item" onclick="toggleSound()"><span id="sound-icon">🔊</span> Звук</button>
-                <button class="menu-item" onclick="shareResult()">📤 Поделиться</button>
-                <button class="menu-item" onclick="showHelp()">❓ Помощь</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Аудио -->
-<audio id="click-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" preload="auto"></audio>
-<audio id="success-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-success-bell-893.mp3" preload="auto"></audio>
-<audio id="background-music" loop preload="auto">
-    <source src="https://assets.mixkit.co/music/preview/mixkit-spooky-ambience-927.mp3" type="audio/mpeg">
-</audio>
-
-<script src="app.js?v=2.0.0"></script>
+    function ending(choice) {
+      showScreen('ending');
+      if (choice === 'chaos') {
+        document.getElementById('ending-title').innerText = 'Ты выбрал Хаос';
+        document.getElementById('ending-text').innerText = 'Мир распался. Ты стал Проводником хаоса.';
+      } else {
+        document.getElementById('ending-title').innerText = 'Ты сохранил Единство';
+        document.getElementById('ending-text').innerText = 'Источник воссиял вновь. Ты стал Хранителем целого.';
+      }
+    }
+  </script>
 </body>
 </html>
