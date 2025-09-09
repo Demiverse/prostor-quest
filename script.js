@@ -121,72 +121,43 @@ function ending(choice) {
   }
 }
 
-// Орбиты и вращение с пульсацией
-let orbits = [];
-let pulse = 0;
+// планеты
+let planets = [];
+let tick = 0;
 
-function initOrbits() {
+function initPlanets() {
   const map = document.querySelector(".map");
-  const planets = map.querySelectorAll(".aspect-btn");
-  const mapRect = map.getBoundingClientRect();
-  const cx = map.offsetWidth / 2;
-  const cy = map.offsetHeight / 2;
-
-  // Минимальный из половины ширины и высоты экрана
-  const maxRadius = Math.min(window.innerWidth, window.innerHeight) / 2;
-
-  orbits = [];
-  planets.forEach((planet, i) => {
-    const planetSize = planet.offsetWidth; // учитываем диаметр
-    let angle = Math.random() * Math.PI * 2;
-
-    // радиус = часть от maxRadius, но с учётом размера планеты
-    let radius = (maxRadius - planetSize / 2 - 20) * (0.3 + i * 0.12);
-
-    let speed = 0.001 + Math.random() * 0.002;
-    orbits.push({ planet, angle, radius, speed, cx, cy });
+  planets = Array.from(map.querySelectorAll(".aspect-btn")).map((planet, i) => {
+    return {
+      el: planet,
+      baseX: Math.random() * (map.offsetWidth - planet.offsetWidth),
+      baseY: Math.random() * (map.offsetHeight - planet.offsetHeight),
+      offsetX: Math.random() * 1000, // для уникального шума
+      offsetY: Math.random() * 1000,
+      pulseOffset: Math.random() * Math.PI * 2
+    };
   });
 }
 
-function animateOrbits() {
-  const canvas = document.getElementById("links");
-  const ctx = canvas.getContext("2d");
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+function animatePlanets() {
+  tick += 0.01;
+  planets.forEach(p => {
+    // блуждание
+    let x = p.baseX + Math.sin(tick + p.offsetX) * 30;
+    let y = p.baseY + Math.cos(tick + p.offsetY) * 30;
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // пульсация
+    let scale = 1 + Math.sin(tick + p.pulseOffset) * 0.05;
 
-  // пульсация
-  pulse += 0.05;
-  const glow = 128 + Math.floor(Math.sin(pulse) * 127);
-  ctx.strokeStyle = `rgba(0, ${glow}, 255, 0.7)`;
-  ctx.lineWidth = 2;
-  ctx.shadowBlur = 20;
-  ctx.shadowColor = `rgba(0, ${glow}, 255, 1)`;
-
-  const map = document.querySelector(".map");
-  const mapRect = map.getBoundingClientRect();
-  const cx = mapRect.left + mapRect.width / 2;
-  const cy = mapRect.top + mapRect.height / 2;
-
-  orbits.forEach(o => {
-    o.angle += o.speed;
-    let x = cx + Math.cos(o.angle) * o.radius;
-    let y = cy + Math.sin(o.angle) * o.radius;
-    o.planet.style.left = (x - mapRect.left - o.planet.offsetWidth/2) + "px";
-    o.planet.style.top = (y - mapRect.top - o.planet.offsetHeight/2) + "px";
-
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(x, y);
-    ctx.stroke();
+    p.el.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
   });
 
-  requestAnimationFrame(animateOrbits);
+  requestAnimationFrame(animatePlanets);
 }
 
 window.addEventListener("load", () => {
-  initOrbits();
-  animateOrbits();
+  initPlanets();
+  animatePlanets();
 });
-window.addEventListener("resize", initOrbits);
+window.addEventListener("resize", initPlanets);
+
