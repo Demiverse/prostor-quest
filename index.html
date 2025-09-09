@@ -51,6 +51,15 @@
       <p id="ending-text"></p>
     </div>
   </div>
+
+  <!-- vkBridge -->
+  <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+  <script>
+    // Инициализация Mini Apps
+    vkBridge.send('VKWebAppInit');
+  </script>
+
+  <!-- Скрипт игры -->
   <script src="script.js"></script>
 </body>
 </html>
