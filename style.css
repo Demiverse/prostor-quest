@@ -46,8 +46,8 @@ body {
   backdrop-filter: blur(8px);
 }
 .dialog-box p {
-  white-space: pre-wrap; /* сохраняет переносы и делает авторазбивку */
-  word-wrap: break-word; /* ломает длинные слова */
+  white-space: pre-wrap;
+  word-wrap: break-word;
   max-width: 100%;
 }
 .btn {

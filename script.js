@@ -25,7 +25,7 @@ function typeText(elementId, text, speed = 40) {
   function finish() {
     clearInterval(interval);
     el.innerText = text;
-    el.onclick = null; // убираем обработчик после завершения
+    el.onclick = null;
   }
 
   interval = setInterval(() => {
@@ -34,7 +34,6 @@ function typeText(elementId, text, speed = 40) {
     if (i >= text.length) finish();
   }, speed);
 
-  // возможность пропустить по клику
   el.onclick = finish;
 }
 
@@ -59,12 +58,25 @@ function enterAspect(aspect) {
   document.getElementById('aspect-title').innerText = aspects[aspect].title;
   document.getElementById('aspect-task').innerText = aspects[aspect].task;
   document.getElementById('aspect-puzzle').innerHTML = aspects[aspect].puzzle;
+  document.getElementById('aspect-error').style.display = 'none';
+
   document.getElementById('aspect-submit').onclick = () => {
     let val = document.getElementById('answer').value.trim();
     if (val.toLowerCase() === aspects[aspect].answer.toLowerCase()) {
       completeAspect();
-    } else {alert('Ответ неверный. Попробуй снова!');}
+    } else {
+      showError('Ответ неверный. Попробуй снова!');
+    }
   };
+}
+
+function showError(msg) {
+  let err = document.getElementById('aspect-error');
+  err.innerText = msg;
+  err.style.display = 'block';
+  setTimeout(() => {
+    err.style.display = 'none';
+  }, 2000);
 }
 
 function completeAspect() {
@@ -84,4 +96,3 @@ function ending(choice) {
     document.getElementById('ending-text').innerText = 'Источник воссиял вновь. Ты стал Хранителем целого. (✨)';
   }
 }
-
