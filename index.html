@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Сингулярность Простора</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="loading" class="screen active">
+    <h2>Синхронизация с Источником...</h2>
+    <p id="progress">0%</p>
+  </div>
+  <div id="intro" class="screen">
+    <h1>Сингулярность Простора</h1>
+    <div class="dialog-box">
+      <p id="dialog-text"></p>
+    </div>
+    <button class="btn" onclick="showScreen('map')">Отправиться в путь</button>
+  </div>
+  <div id="map" class="screen">
+    <h2>Выбери Аспект</h2>
+    <div class="map">
+      <div id="form" class="aspect-btn" onclick="enterAspect('form')">Форма</div>
+      <div id="sound" class="aspect-btn" onclick="enterAspect('sound')">Звук</div>
+      <div id="narrative" class="aspect-btn" onclick="enterAspect('narrative')">Нарратив</div>
+      <div id="vision" class="aspect-btn" onclick="enterAspect('vision')">Видение</div>
+      <div id="will" class="aspect-btn" onclick="enterAspect('will')">Воля</div>
+    </div>
+  </div>
+  <div id="aspect" class="screen">
+    <h2 id="aspect-title"></h2>
+    <p id="aspect-task"></p>
+    <div id="aspect-puzzle"></div>
+    <button class="btn" id="aspect-submit">Проверить</button>
+  </div>
+  <div id="final" class="screen">
+    <h2>Хранитель раскрывает истину...</h2>
+    <div class="dialog-box">
+      <p>
+        Он и есть Критик. «Каждый Аспект самодостаточен.
+        Присоединись ко мне — и мир обретёт хаос без уз».
+      </p>
+    </div>
+    <button class="btn" onclick="ending('chaos')">Принять сторону Критика</button>
+    <button class="btn" onclick="ending('harmony')">Силой Аспектов победить его</button>
+  </div>
+  <div id="ending" class="screen">
+    <h2 id="ending-title"></h2>
+    <div class="dialog-box">
+      <p id="ending-text"></p>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
