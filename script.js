@@ -84,3 +84,4 @@ function ending(choice) {
     document.getElementById('ending-text').innerText = 'Источник воссиял вновь. Ты стал Хранителем целого. (✨)';
   }
 }
+
