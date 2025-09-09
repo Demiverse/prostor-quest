@@ -1,7 +1,7 @@
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
-  background: #0a0a0f;
+  background: linear-gradient(135deg, #4facfe, #ff9a9e);
   color: #fff;
   display: flex;
   justify-content: center;
@@ -14,54 +14,93 @@ body {
   display: none;
   text-align: center;
   padding: 20px;
-  max-width: 600px;
+  max-width: 800px;
+  width: 100%;
+  height: 100%;
+  animation: fadeIn 0.8s ease forwards;
 }
 
 .active {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Кнопки */
 .btn {
-  background: #1e90ff;
+  background: linear-gradient(90deg, #1e90ff, #ff69b4);
   border: none;
-  border-radius: 12px;
-  padding: 12px 20px;
+  border-radius: 20px;
+  padding: 12px 28px;
   margin: 10px;
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: bold;
   color: #fff;
   cursor: pointer;
-  transition: 0.3s;
+  box-shadow: 0 0 15px rgba(255, 105, 180, 0.7);
+  transition: transform 0.3s, box-shadow 0.3s;
 }
-
 .btn:hover {
-  background: #63b3ff;
+  transform: scale(1.08);
+  box-shadow: 0 0 25px rgba(79, 172, 254, 0.9);
 }
 
+/* Диалоговое окно */
+.dialog-box {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: rgba(10, 10, 20, 0.7);
+  border-top: 3px solid #fff;
+  padding: 20px;
+  font-size: 18px;
+  line-height: 1.5;
+  text-align: left;
+  animation: fadeIn 0.5s ease forwards;
+}
+
+/* Карта */
 .map {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  margin-top: 20px;
+  position: relative;
+  width: 500px;
+  height: 500px;
+  margin: auto;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 40px rgba(255, 255, 255, 0.3) inset;
 }
 
 .aspect-btn {
-  background: #222;
-  border: 2px solid #1e90ff;
-  border-radius: 50%;
+  position: absolute;
   width: 120px;
   height: 120px;
+  background: linear-gradient(135deg, #1e90ff, #ff69b4);
+  border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
+  font-weight: bold;
   cursor: pointer;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
   transition: 0.3s;
 }
-
 .aspect-btn:hover {
-  background: #1e90ff;
+  transform: scale(1.15);
+  box-shadow: 0 0 30px rgba(255, 255, 255, 1);
+}
+.completed {
+  background: linear-gradient(135deg, #32cd32, #7fff00) !important;
 }
 
-.completed {
-  background: #32cd32 !important;
-  border-color: #32cd32 !important;
-}
+/* Позиции аспектов вокруг круга */
+#form { top: 0; left: 190px; }
+#sound { top: 100px; right: 0; }
+#narrative { bottom: 100px; right: 0; }
+#vision { bottom: 100px; left: 0; }
+#will { top: 100px; left: 0; }
