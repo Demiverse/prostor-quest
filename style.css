@@ -7,23 +7,14 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  background: #000;
 }
-
-/* Фон — космос */
 #stars {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
   z-index: -1;
-  background: #000;
 }
-
-/* Анимированные звёзды (particles.js вставится сюда) */
-canvas {
-  display: block;
-}
-
-/* Экран */
 .screen {
   display: none;
   text-align: center;
@@ -39,13 +30,7 @@ canvas {
   align-items: center;
   animation: fadeIn 1s ease forwards;
 }
-
-@keyframes fadeIn {
-  from {opacity: 0;}
-  to {opacity: 1;}
-}
-
-/* Диалоговое окно */
+@keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
 .dialog-box {
   width: 90%;
   max-width: 800px;
@@ -60,8 +45,6 @@ canvas {
   box-shadow: 0 0 20px rgba(0,200,255,0.5);
   backdrop-filter: blur(8px);
 }
-
-/* Кнопки */
 .btn {
   margin: 20px;
   padding: 15px 30px;
@@ -79,8 +62,6 @@ canvas {
   transform: scale(1.1);
   box-shadow: 0 0 30px rgba(30,144,255,1);
 }
-
-/* Карта аспектов — созвездие */
 .map {
   position: relative;
   width: 90vw;
@@ -91,7 +72,6 @@ canvas {
   background: rgba(255,255,255,0.05);
   box-shadow: inset 0 0 30px rgba(255,255,255,0.2);
 }
-
 .aspect-btn {
   position: absolute;
   width: 90px;
@@ -113,15 +93,12 @@ canvas {
 .completed {
   background: radial-gradient(circle, #7fff00 0%, #32cd32 80%) !important;
 }
-
-/* Адаптив */
+#form { top: 0; left: 40%; }
+#sound { top: 30%; right: 0; }
+#narrative { bottom: 10%; right: 20%; }
+#vision { bottom: 10%; left: 20%; }
+#will { top: 30%; left: 0; }
 @media (max-width: 600px) {
-  .aspect-btn {
-    width: 60px;
-    height: 60px;
-    font-size: 12px;
-  }
-  .dialog-box {
-    font-size: 16px;
-  }
+  .aspect-btn { width: 60px; height: 60px; font-size: 12px; }
+  .dialog-box { font-size: 16px; }
 }

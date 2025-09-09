@@ -1,19 +1,21 @@
 let progress = 0;
 let collected = {};
 let currentAspect = null;
+
 let loader = setInterval(() => {
   progress += 10;
   document.getElementById('progress').innerText = progress + '%';
   if (progress >= 100) {
     clearInterval(loader);
     showScreen('intro');
-    startIntroDialog();
   }
 }, 200);
+
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
+
 function typeText(elementId, text, speed = 40) {
   let i = 0;
   let el = document.getElementById(elementId);
@@ -24,11 +26,14 @@ function typeText(elementId, text, speed = 40) {
     if (i >= text.length) clearInterval(interval);
   }, speed);
 }
-function startIntroDialog() {
+
+function startJourney() {
+  showScreen('dialog');
   typeText("dialog-text",
     "Я — Хранитель. Пять Аспектов ждут тебя. Лишь собрав их вместе, ты сможешь зажечь Источник и противостоять Критику."
   );
 }
+
 const aspects = {
   form: {title: 'Аспект Формы',task: 'Какая фигура считается совершенной в геометрии?',puzzle: `<input type="text" id="answer" placeholder="Твой ответ">`,answer: 'круг'},
   sound: {title: 'Аспект Звука',task: 'Что из этого — не музыкальный жанр?',puzzle: `<select id="answer"><option>Рок</option><option>Джаз</option><option>Импрессионизм</option><option>Хип-хоп</option></select>`,answer: 'Импрессионизм'},
@@ -36,6 +41,7 @@ const aspects = {
   vision: {title: 'Аспект Видения',task: 'Сколько треугольников здесь? 🔺🔺🔺',puzzle: `<input type="number" id="answer" placeholder="Число">`,answer: '3'},
   will: {title: 'Аспект Воли',task: 'Что важнее всего для завершения любого проекта?',puzzle: `<select id="answer"><option>Идея</option><option>Воля</option><option>Инструменты</option></select>`,answer: 'Воля'}
 };
+
 function enterAspect(aspect) {
   currentAspect = aspect;
   showScreen('aspect');
@@ -49,12 +55,14 @@ function enterAspect(aspect) {
     } else {alert('Ответ неверный. Попробуй снова!');}
   };
 }
+
 function completeAspect() {
   collected[currentAspect] = true;
   document.getElementById(currentAspect).classList.add('completed');
   showScreen('map');
   if (Object.keys(collected).length === 5) {showScreen('final');}
 }
+
 function ending(choice) {
   showScreen('ending');
   if (choice === 'chaos') {
