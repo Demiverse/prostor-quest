@@ -14,6 +14,11 @@ let loader = setInterval(() => {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  
+  // При переключении экрана перерисовываем планеты
+  if (id === 'map') {
+    setTimeout(positionPlanets, 50);
+  }
 }
 
 function typeText(elementId, text, speed = 40) {
@@ -121,31 +126,51 @@ function ending(choice) {
   }
 }
 
-// Размещение планет по кругу с разным радиусом
+// Улучшенное позиционирование планет
 function positionPlanets() {
   const map = document.querySelector(".map");
   const planets = map.querySelectorAll(".aspect-btn");
+  const center = map.querySelector(".center");
 
   const mapWidth = map.offsetWidth;
   const mapHeight = map.offsetHeight;
+  
+  // Центральная планета в центре
+  center.style.left = (mapWidth - center.offsetWidth) / 2 + "px";
+  center.style.top = (mapHeight - center.offsetHeight) / 2 + "px";
+
+  // Безопасная зона (отступ от краев)
+  const padding = 40;
+  const safeWidth = mapWidth - padding * 2;
+  const safeHeight = mapHeight - padding * 2;
+
+  // Эллиптическое распределение для лучшего использования пространства
+  const numPlanets = planets.length;
   const centerX = mapWidth / 2;
   const centerY = mapHeight / 2;
 
-  const padding = 80;
-  const maxRadius = Math.min(mapWidth, mapHeight) / 2 - padding;
-
-  // равномерное распределение радиусов для всех планет
-  const orbitStep = maxRadius / (planets.length + 1);
-
+  // Автоматическое определение оптимального радиуса
+  const maxRadiusX = safeWidth / 2 - Math.max(...Array.from(planets).map(p => p.offsetWidth));
+  const maxRadiusY = safeHeight / 2 - Math.max(...Array.from(planets).map(p => p.offsetHeight));
+  
+  // Используем эллипс для лучшего заполнения пространства
   planets.forEach((planet, i) => {
-    const angle = (2 * Math.PI / planets.length) * i; // равномерный угол
-    const radius = orbitStep * (i + 1);               // разный радиус
+    const angle = (2 * Math.PI / numPlanets) * i;
+    
+    // Динамическое распределение радиусов
+    const radiusRatio = 0.7 + (0.3 * (i / numPlanets)); // От 70% до 100%
+    const radiusX = maxRadiusX * radiusRatio;
+    const radiusY = maxRadiusY * radiusRatio;
 
-    const x = Math.cos(angle) * radius + centerX - planet.offsetWidth / 2;
-    const y = Math.sin(angle) * radius + centerY - planet.offsetHeight / 2;
+    const x = Math.cos(angle) * radiusX + centerX - planet.offsetWidth / 2;
+    const y = Math.sin(angle) * radiusY + centerY - planet.offsetHeight / 2;
 
-    planet.style.left = x + "px";
-    planet.style.top = y + "px";
+    // Проверка границ
+    const finalX = Math.max(padding, Math.min(x, mapWidth - planet.offsetWidth - padding));
+    const finalY = Math.max(padding, Math.min(y, mapHeight - planet.offsetHeight - padding));
+
+    planet.style.left = finalX + "px";
+    planet.style.top = finalY + "px";
   });
 
   drawLinks();
@@ -181,5 +206,33 @@ function drawLinks() {
   });
 }
 
-window.addEventListener("load", positionPlanets);
-window.addEventListener("resize", positionPlanets);
+// Автоматическое обновление при изменении размера
+let resizeTimer;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(positionPlanets, 250);
+});
+
+// Инициализация после полной загрузки
+window.addEventListener("load", () => {
+  positionPlanets();
+  // Дополнительная проверка после небольшой задержки
+  setTimeout(positionPlanets, 100);
+});
+
+// Дополнительная обработка для VK Mini Apps
+document.addEventListener('DOMContentLoaded', function() {
+  // Проверка типа устройства
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  
+  if (isMobile) {
+    document.body.classList.add('mobile');
+  } else {
+    document.body.classList.add('desktop');
+  }
+  
+  // Перепозиционирование при изменении ориентации
+  window.addEventListener('orientationchange', function() {
+    setTimeout(positionPlanets, 300);
+  });
+});

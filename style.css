@@ -71,6 +71,7 @@ body {
   position: relative;
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
 }
 .planet {
   position: absolute;
@@ -83,24 +84,24 @@ body {
   box-shadow: 0 0 25px rgba(255,255,255,0.8);
   transition: transform 0.3s, box-shadow 0.3s;
   z-index: 2;
+  text-align: center;
+  word-wrap: break-word;
 }
 .aspect-btn {
-  width: 80px;
-  height: 80px;
+  width: 70px;
+  height: 70px;
   background: radial-gradient(circle, #fff 0%, #1e90ff 80%);
+  font-size: 14px;
 }
 .aspect-btn:hover {
   transform: scale(1.2);
   box-shadow: 0 0 40px rgba(255,255,255,1);
 }
 .center {
-  width: 140px;
-  height: 140px;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
   background: radial-gradient(circle, #ff69b4 0%, #8a2be2 80%);
-  font-size: 18px;
+  font-size: 16px;
   box-shadow: 0 0 50px rgba(255,105,180,1), 0 0 100px rgba(138,43,226,0.8);
 }
 .completed {
@@ -114,4 +115,44 @@ body {
   height: 100%;
   pointer-events: none;
   z-index: 1;
+}
+
+/* Медиа-запросы для адаптивности */
+@media (max-width: 768px) {
+  .aspect-btn {
+    width: 60px;
+    height: 60px;
+    font-size: 12px;
+    padding: 2px;
+  }
+  
+  .center {
+    width: 80px;
+    height: 80px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .aspect-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 10px;
+  }
+  
+  .center {
+    width: 70px;
+    height: 70px;
+    font-size: 12px;
+  }
+  
+  .btn {
+    padding: 12px 24px;
+    font-size: 16px;
+  }
+  
+  .dialog-box {
+    font-size: 16px;
+    padding: 15px;
+  }
 }
