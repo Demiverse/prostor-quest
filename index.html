@@ -3,20 +3,93 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Созвездие Аспектов</title>
+  <title>Сингулярность Простора</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="map">
-    <h1>Созвездие Аспектов</h1>
-    <div class="planet central">Простор</div>
-    <div class="aspect-btn">Форма</div>
-    <div class="aspect-btn">Звук</div>
-    <div class="aspect-btn">Нарратив</div>
-    <div class="aspect-btn">Видение</div>
-    <div class="aspect-btn">Воля</div>
+  <div id="stars"></div>
+
+  <div id="loading" class="screen active">
+    <h2>Синхронизация с Источником...</h2>
+    <p id="progress">0%</p>
   </div>
-  <audio id="bg-music" src="music.mp3" autoplay loop></audio>
-  <script src="script.js"></script>
+
+  <div id="intro" class="screen">
+    <h1>Сингулярность Простора</h1>
+    <button class="btn" onclick="startJourney()">Отправиться в путешествие</button>
+  </div>
+
+  <div id="dialog" class="screen">
+    <div class="dialog-box">
+      <p id="dialog-text"></p>
+    </div>
+    <button class="btn" onclick="showScreen('map')">Продолжить</button>
+  </div>
+
+  <div id="map" class="screen">
+    <h2>Созвездие Аспектов</h2>
+    <div class="map">
+      <div id="prostor" class="planet center" onclick="window.open('https://vk.com/prostor','_blank')">Простор</div>
+      <div id="form" class="planet aspect-btn" onclick="enterAspect('form')">Форма</div>
+      <div id="sound" class="planet aspect-btn" onclick="enterAspect('sound')">Звук</div>
+      <div id="narrative" class="planet aspect-btn" onclick="enterAspect('narrative')">Нарратив</div>
+      <div id="vision" class="planet aspect-btn" onclick="enterAspect('vision')">Видение</div>
+      <div id="will" class="planet aspect-btn" onclick="enterAspect('will')">Воля</div>
+      <canvas id="links"></canvas>
+    </div>
+  </div>
+
+  <div id="aspect" class="screen">
+    <h2 id="aspect-title"></h2>
+    <p id="aspect-task"></p>
+    <div id="aspect-puzzle"></div>
+    <p id="aspect-error" style="color:#ff8080; font-weight:bold; display:none;"></p>
+    <button class="btn" id="aspect-submit">Проверить</button>
+  </div>
+
+  <div id="final" class="screen">
+    <h2>Хранитель раскрывает истину...</h2>
+    <div class="dialog-box">
+      <p>
+        Он и есть Критик. «Каждый Аспект самодостаточен.
+        Присоединись ко мне — и мир обретёт хаос без уз».
+      </p>
+    </div>
+    <button class="btn" onclick="ending('chaos')">Принять сторону Критика</button>
+    <button class="btn" onclick="ending('harmony')">Силой Аспектов победить его</button>
+  </div>
+
+  <div id="ending" class="screen">
+    <h2 id="ending-title"></h2>
+    <div class="dialog-box">
+      <p id="ending-text"></p>
+    </div>
+  </div>
+
+  <!-- Музыка -->
+  <audio id="bg-music" loop>
+    <source src="StockTune-Echoes Of The Cosmos_1757438077.mp3" type="audio/mpeg">
+  </audio>
+  <button id="music-toggle" class="btn" style="position:fixed;top:20px;right:20px;z-index:1000;">🔇</button>
+
+  <!-- vkBridge -->
+  <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+  <script>vkBridge.send('VKWebAppInit');</script>
+
+  <!-- particles.js -->
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+  <script>
+    particlesJS('stars', {
+      "particles": {
+        "number": {"value": 120},
+        "size": {"value": 2},
+        "move": {"speed": 0.5},
+        "line_linked": {"enable": false},
+        "color": {"value": "#ffffff"}
+      }
+    });
+  </script>
+
+  <script src="script.js?v=4"></script>
 </body>
 </html>
