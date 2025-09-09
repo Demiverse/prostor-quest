@@ -42,7 +42,6 @@ body {
   font-weight: bold;
   box-shadow: 0 0 30px rgba(0, 150, 255, 0.7);
   animation: pulse 3s infinite;
-  cursor: pointer;
 }
 
 @keyframes pulse {

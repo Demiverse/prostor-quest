@@ -1,13 +1,5 @@
 let planets = [];
 
-// Инициализация VK Bridge
-vkBridge.send('VKWebAppInit');
-
-// Логирование событий VK Bridge (на всякий случай)
-vkBridge.subscribe((e) => {
-  console.log('VK Bridge event:', e);
-});
-
 function initPlanets() {
   const map = document.querySelector(".map");
   const planetsEls = Array.from(map.querySelectorAll(".aspect-btn"));
@@ -24,16 +16,5 @@ function initPlanets() {
   });
 }
 
-window.addEventListener("load", () => {
-  initPlanets();
-
-  // Попытка автоплея
-  const audio = document.getElementById("bg-music");
-  if (audio) {
-    audio.play().catch(err => {
-      console.log("Автовоспроизведение запрещено:", err);
-    });
-  }
-});
-
+window.addEventListener("load", initPlanets);
 window.addEventListener("resize", initPlanets);
