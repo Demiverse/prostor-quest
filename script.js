@@ -133,7 +133,6 @@ function initPlanets() {
   const radius = Math.min(map.offsetWidth, map.offsetHeight) / 3;
 
   planets = planetsEls.map((planet, i) => {
-    // равномерно распределяем углы
     let angle = (i / planetsEls.length) * Math.PI * 2;
 
     let baseX = cx + Math.cos(angle) * radius - planet.offsetWidth / 2;
@@ -143,24 +142,25 @@ function initPlanets() {
       el: planet,
       baseX,
       baseY,
-      offsetX: Math.random() * 1000,
-      offsetY: Math.random() * 1000,
+      angle,
       pulseOffset: Math.random() * Math.PI * 2
     };
   });
 }
 
 function animatePlanets() {
-  tick += 0.01;
+  tick += 0.02;
   planets.forEach(p => {
-    // блуждание
-    let x = p.baseX + Math.sin(tick + p.offsetX) * 30;
-    let y = p.baseY + Math.cos(tick + p.offsetY) * 30;
+    // дрейф
+    let driftX = Math.sin(tick + p.angle) * 15;
+    let driftY = Math.cos(tick + p.angle) * 15;
 
     // пульсация
     let scale = 1 + Math.sin(tick + p.pulseOffset) * 0.05;
 
-    p.el.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+    p.el.style.left = (p.baseX + driftX) + "px";
+    p.el.style.top = (p.baseY + driftY) + "px";
+    p.el.style.transform = `scale(${scale})`;
   });
 
   requestAnimationFrame(animatePlanets);
@@ -171,4 +171,3 @@ window.addEventListener("load", () => {
   animatePlanets();
 });
 window.addEventListener("resize", initPlanets);
-
