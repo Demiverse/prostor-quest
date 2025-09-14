@@ -1,12 +1,10 @@
-// script.js final2 with requested changes
+// script.js final3_fixed
 
 let progress = 0;
 let collected = {};
 let currentAspect = null;
 let musicPlaying = false;
-let animationsEnabled = true;
-let currentScreen = 'loading';
-let modalReturnScreen = 'intro';
+let previousScreen = 'intro';
 
 function $id(id){ return document.getElementById(id); }
 
@@ -22,52 +20,34 @@ let loader = setInterval(() => {
 }, 200);
 
 /* Screen management with history */
-
 function showScreen(id){
-  // Show a screen by id. currentScreen updated; modalReturnScreen preserved for modals.
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const el = $id(id);
-  if(el) el.classList.add('active');
-  // Update currentScreen for non-modal screens
   if(id !== 'achievements' && id !== 'inventory' && id !== 'item-modal'){
-    currentScreen = id;
+    previousScreen = id;
   }
-  if(id === 'map'){ setTimeout(positionPlanets, 50); }
-}
-
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = $id(id);
   if(el) el.classList.add('active');
   if(id === 'map'){ setTimeout(positionPlanets, 50); }
 }
+function goBack(){ showScreen(previousScreen); }
 
-function goBack(){ showScreen(modalReturnScreen || 'map'); }
-
-/* Typing text */
-
+/* Typing text with skip */
 function typeText(elementId, text, speed = 40){
   const el = $id(elementId);
   if(!el) return;
   let i = 0;
   el.innerText = '';
-  let interval;
-  function finish(){
-    clearInterval(interval);
-    el.innerText = text;
-    el.onclick = null;
-  }
-  el.onclick = finish;
-  interval = setInterval(() => {
+  let interval = setInterval(() => {
     el.innerText += text.charAt(i);
     i++;
     if(i >= text.length){
       clearInterval(interval);
-      el.onclick = null;
     }
   }, speed);
-}
-
-  }, speed);
+  el.onclick = () => {
+    clearInterval(interval);
+    el.innerText = text;
+  };
 }
 
 /* Music */
@@ -88,7 +68,7 @@ function toggleMusic(){
 /* Start journey */
 function startJourney(){
   showScreen('dialog');
-  typeText('dialog-text', "Я — Хранитель. Пять Аспектов ждут тебя. Лишь собрав их вместе, ты сможешь зажечь Источник и противостоять Критику.");
+  typeText('dialog-text', "Я — Хранитель Простора. Пять Аспектов ждут тебя. Лишь собрав их вместе, ты сможешь зажечь Источник и противостоять Критику.");
   if(!musicPlaying && music){
     music.play().then(()=>{ musicPlaying = true; updateMusicButton(); }).catch(()=>{});
   }
@@ -209,20 +189,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   $id('ach-btn').addEventListener('click', ()=>{ updateAchievements(); showScreen('achievements'); });
   $id('inv-btn').addEventListener('click', ()=>{ updateInventory(); showScreen('inventory'); });
   $id('reset-btn').addEventListener('click', resetProgress);
-  
-  // Add dialog headers inside dialog boxes
-  document.querySelectorAll('.dialog-box').forEach(box => {
-    if(!box.querySelector('.dialog-header')){
-      const header = document.createElement('div');
-      header.className = 'dialog-header';
-      header.textContent = 'Хранитель Простора';
-      box.appendChild(header);
-    }
-  });
-  // Ensure modalReturnScreen is set before opening achievements/inventory
-  $id('ach-btn').addEventListener('click', ()=>{ modalReturnScreen = currentScreen; updateAchievements(); showScreen('achievements'); });
-  $id('inv-btn').addEventListener('click', ()=>{ modalReturnScreen = currentScreen; updateInventory(); showScreen('inventory'); });
-updateMusicButton();
+  updateMusicButton();
 });
 
 /* Achievements */
@@ -245,7 +212,7 @@ function updateAchievements(){
   }
 }
 
-/* Inventory items */
+/* Inventory */
 const inventoryItems = {
   form: { icon: "🔷", name: "Артефакт Формы", desc: "Символ совершенства и гармонии." },
   sound: { icon: "🎵", name: "Артефакт Звука", desc: "Символ музыки и вибраций." },
@@ -271,16 +238,16 @@ function updateInventory(){
 }
 
 /* Item modal */
-function showItemModal(title, desc){ modalReturnScreen = currentScreen;
+function showItemModal(title, desc){
   const titleEl = $id('item-title');
   const descEl = $id('item-desc');
   if(titleEl) titleEl.innerText = title;
   if(descEl) descEl.innerText = desc;
   showScreen('item-modal');
 }
-function closeItemModal(){ goBack(); }
+function closeItemModal(){ showScreen('inventory'); }
 
-/* Reset progress */
+/* Reset */
 function resetProgress(){
   collected = {};
   document.querySelectorAll('.planet').forEach(p => p.classList.remove('completed'));
