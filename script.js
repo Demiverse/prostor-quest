@@ -5,7 +5,8 @@ let collected = {};
 let currentAspect = null;
 let musicPlaying = false;
 let animationsEnabled = true;
-let previousScreen = 'intro';
+let currentScreen = 'loading';
+let modalReturnScreen = 'intro';
 
 function $id(id){ return document.getElementById(id); }
 
@@ -21,33 +22,51 @@ let loader = setInterval(() => {
 }, 200);
 
 /* Screen management with history */
+
 function showScreen(id){
+  // Show a screen by id. currentScreen updated; modalReturnScreen preserved for modals.
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = $id(id);
+  if(el) el.classList.add('active');
+  // Update currentScreen for non-modal screens
   if(id !== 'achievements' && id !== 'inventory' && id !== 'item-modal'){
-    previousScreen = id;
+    currentScreen = id;
   }
+  if(id === 'map'){ setTimeout(positionPlanets, 50); }
+}
+
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = $id(id);
   if(el) el.classList.add('active');
   if(id === 'map'){ setTimeout(positionPlanets, 50); }
 }
 
-function goBack(){
-  showScreen(previousScreen);
-}
+function goBack(){ showScreen(modalReturnScreen || 'map'); }
 
 /* Typing text */
+
 function typeText(elementId, text, speed = 40){
   const el = $id(elementId);
   if(!el) return;
   let i = 0;
   el.innerText = '';
-  el.onclick = null;
-  const interval = setInterval(() => {
+  let interval;
+  function finish(){
+    clearInterval(interval);
+    el.innerText = text;
+    el.onclick = null;
+  }
+  el.onclick = finish;
+  interval = setInterval(() => {
     el.innerText += text.charAt(i);
     i++;
     if(i >= text.length){
       clearInterval(interval);
+      el.onclick = null;
     }
+  }, speed);
+}
+
   }, speed);
 }
 
@@ -190,7 +209,20 @@ document.addEventListener('DOMContentLoaded', ()=>{
   $id('ach-btn').addEventListener('click', ()=>{ updateAchievements(); showScreen('achievements'); });
   $id('inv-btn').addEventListener('click', ()=>{ updateInventory(); showScreen('inventory'); });
   $id('reset-btn').addEventListener('click', resetProgress);
-  updateMusicButton();
+  
+  // Add dialog headers inside dialog boxes
+  document.querySelectorAll('.dialog-box').forEach(box => {
+    if(!box.querySelector('.dialog-header')){
+      const header = document.createElement('div');
+      header.className = 'dialog-header';
+      header.textContent = 'Хранитель Простора';
+      box.appendChild(header);
+    }
+  });
+  // Ensure modalReturnScreen is set before opening achievements/inventory
+  $id('ach-btn').addEventListener('click', ()=>{ modalReturnScreen = currentScreen; updateAchievements(); showScreen('achievements'); });
+  $id('inv-btn').addEventListener('click', ()=>{ modalReturnScreen = currentScreen; updateInventory(); showScreen('inventory'); });
+updateMusicButton();
 });
 
 /* Achievements */
@@ -239,14 +271,14 @@ function updateInventory(){
 }
 
 /* Item modal */
-function showItemModal(title, desc){
+function showItemModal(title, desc){ modalReturnScreen = currentScreen;
   const titleEl = $id('item-title');
   const descEl = $id('item-desc');
   if(titleEl) titleEl.innerText = title;
   if(descEl) descEl.innerText = desc;
   showScreen('item-modal');
 }
-function closeItemModal(){ showScreen('inventory'); }
+function closeItemModal(){ goBack(); }
 
 /* Reset progress */
 function resetProgress(){
