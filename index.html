@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Сингулярность Простора</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
 </head>
 <body>
   <div id="stars"></div>
@@ -31,7 +32,7 @@
   <div id="map" class="screen">
     <h2>Созвездие Аспектов</h2>
     <div class="map-container">
-      <div class="center-planet" onclick="window.open('https://vk.com/prostor','_blank')">Простор</div>
+      <div class="center-planet" onclick="openProstor()">Простор</div>
       <div id="form" class="planet" onclick="enterAspect('form')">Форма</div>
       <div id="sound" class="planet" onclick="enterAspect('sound')">Звук</div>
       <div id="narrative" class="planet" onclick="enterAspect('narrative')">Нарратив</div>
@@ -69,6 +70,7 @@
       <p id="ending-text"></p>
     </div>
     <button class="btn" onclick="resetProgress()">Начать заново</button>
+    <button class="btn" onclick="shareResult()">Поделиться результатом</button>
   </div>
 
   <div id="achievements" class="screen">
@@ -93,7 +95,6 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

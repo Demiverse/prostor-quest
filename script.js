@@ -9,6 +9,13 @@ let planetsPositioned = false;
 // DOM helper
 function $id(id){ return document.getElementById(id); }
 
+// Initialize VK Bridge
+function initVK() {
+  vkBridge.send('VKWebAppInit', {})
+    .then(data => console.log('VK init success', data))
+    .catch(error => console.error('VK init error', error));
+}
+
 // Loader
 let loader = setInterval(() => {
   progress += 10;
@@ -17,62 +24,27 @@ let loader = setInterval(() => {
   if (progress >= 100) {
     clearInterval(loader);
     showScreen('intro');
-    initParticles();
+    initVK();
+    createStars();
   }
 }, 200);
 
-// Initialize particles
-function initParticles() {
-  particlesJS('stars', {
-    "particles": {
-      "number": {
-        "value": 120,
-        "density": {
-          "enable": true,
-          "value_area": 800
-        }
-      },
-      "color": {
-        "value": "#ffffff"
-      },
-      "shape": {
-        "type": "circle"
-      },
-      "opacity": {
-        "value": 0.5,
-        "random": true
-      },
-      "size": {
-        "value": 2,
-        "random": true
-      },
-      "line_linked": {
-        "enable": false
-      },
-      "move": {
-        "enable": true,
-        "speed": 0.5,
-        "direction": "none",
-        "random": true,
-        "straight": false,
-        "out_mode": "out",
-        "bounce": false
-      }
-    },
-    "interactivity": {
-      "detect_on": "canvas",
-      "events": {
-        "onhover": {
-          "enable": false
-        },
-        "onclick": {
-          "enable": false
-        },
-        "resize": true
-      }
-    },
-    "retina_detect": true
-  });
+// Create stars background
+function createStars() {
+  const starsContainer = $id('stars');
+  starsContainer.innerHTML = '';
+  
+  for (let i = 0; i < 100; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.style.width = Math.random() * 2 + 1 + 'px';
+    star.style.height = star.style.width;
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 100 + '%';
+    star.style.opacity = Math.random() * 0.7 + 0.3;
+    star.style.animationDelay = Math.random() * 3 + 's';
+    starsContainer.appendChild(star);
+  }
 }
 
 // Screen management with history
@@ -88,11 +60,23 @@ function showScreen(id){
     positionPlanets(); 
     planetsPositioned = true;
   }
+  
+  // Update VK view height
+  updateVKViewport();
+}
+
+function updateVKViewport() {
+  if (typeof vkBridge !== 'undefined') {
+    vkBridge.send('VKWebAppSetViewSettings', {
+      status_bar_style: 'light',
+      action_bar_color: '#000000'
+    }).catch(console.error);
+  }
 }
 
 function goBack(){
   if(screenHistory.length > 1) {
-    screenHistory.pop(); // Remove current screen
+    screenHistory.pop();
     const prevScreen = screenHistory[screenHistory.length - 1];
     showScreen(prevScreen);
   } else {
@@ -107,9 +91,10 @@ function typeText(elementId, text, speed = 40){
   let i = 0;
   el.innerHTML = '';
   let interval = setInterval(() => {
-    el.innerHTML += text.charAt(i);
-    i++;
-    if(i >= text.length){
+    if (i < text.length) {
+      el.innerHTML += text.charAt(i);
+      i++;
+    } else {
       clearInterval(interval);
     }
   }, speed);
@@ -120,14 +105,18 @@ function typeText(elementId, text, speed = 40){
 }
 
 // Music
-const music = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_5b735d9f7f.mp3?filename=ambient-piano-amp-strings-120799.mp3');
-music.loop = true;
+let music = null;
 
 function toggleMusic(){
+  if (!music) {
+    music = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_5b735d9f7f.mp3?filename=ambient-piano-amp-strings-120799.mp3');
+    music.loop = true;
+  }
+  
   if(musicPlaying){ 
     music.pause(); 
   } else { 
-    music.play().catch(()=>{}); 
+    music.play().catch(() => {}); 
   }
   musicPlaying = !musicPlaying;
   updateMusicButton();
@@ -143,6 +132,18 @@ function updateMusicButton(){
 function startJourney(){
   showScreen('dialog');
   typeText('dialog-text', "Я — Хранитель Простора. Пять Аспектов ждут тебя. Лишь собрав их вместе, ты сможешь зажечь Источник и противостоять Критику.");
+}
+
+// Open Prostor community
+function openProstor() {
+  if (typeof vkBridge !== 'undefined') {
+    vkBridge.send('VKWebAppShowCommunityWidgetPreviewBox', {
+      group_id: 123456, // Заменить на реальный ID группы Простор
+      type: 'text'
+    }).catch(console.error);
+  } else {
+    window.open('https://vk.com/prostor', '_blank');
+  }
 }
 
 // Aspects
@@ -205,6 +206,20 @@ function ending(choice){
   }
 }
 
+// Share result
+function shareResult() {
+  if (typeof vkBridge !== 'undefined') {
+    const aspectCount = Object.keys(collected).length;
+    const message = aspectCount === 5 ? 
+      'Я собрал все 5 Аспектов и стал Хранителем целого в игре "Сингулярность Простора"! ✨' :
+      `Я собрал ${aspectCount} из 5 Аспектов в игре "Сингулярность Простора"!`;
+    
+    vkBridge.send('VKWebAppShowWallPostBox', {
+      message: message
+    }).catch(console.error);
+  }
+}
+
 // Planets positioning
 function positionPlanets(){
   const map = document.querySelector('.map-container');
@@ -213,13 +228,13 @@ function positionPlanets(){
   const mapWidth = map.offsetWidth;
   const mapHeight = map.offsetHeight;
   
-  const padding = 40;
+  const padding = 30;
   const safeWidth = mapWidth - padding*2;
   const safeHeight = mapHeight - padding*2;
   const numPlanets = planets.length;
   const centerX = mapWidth/2;
   const centerY = mapHeight/2;
-  const maxPlanetW = Math.max(...Array.from(planets).map(p => p.offsetWidth || 70));
+  const maxPlanetW = Math.max(...Array.from(planets).map(p => p.offsetWidth || 60));
   const maxRadiusX = Math.max(0, safeWidth/2 - maxPlanetW);
   const maxRadiusY = Math.max(0, safeHeight/2 - maxPlanetW);
   
@@ -349,3 +364,5 @@ window.resetProgress = resetProgress;
 window.closeItemModal = closeItemModal;
 window.toggleMusic = toggleMusic;
 window.goBack = goBack;
+window.openProstor = openProstor;
+window.shareResult = shareResult;
