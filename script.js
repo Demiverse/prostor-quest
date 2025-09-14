@@ -69,9 +69,12 @@ function createStars(count = 100) {
 
 // Screen management with history
 function showScreen(id){
-  // only push real screens into history
+  // only push if new screen and not excluded
   if(id !== 'achievements' && id !== 'inventory' && id !== 'item-modal') {
-    screenHistory.push(id);
+    const last = screenHistory[screenHistory.length - 1];
+    if(last !== id) {
+      screenHistory.push(id);
+    }
   }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = $id(id);
