@@ -3,57 +3,53 @@ let progress = 0;
 let collected = {};
 let currentAspect = null;
 let musicPlaying = false;
-let screenHistory = ['intro'];
+let screenHistory = ['loading'];
 let planetsPositioned = false;
 let firstLaunchPlayed = false;
+let starsCreated = false;
+let vkInited = false;
 
 // DOM helper
 function $id(id){ return document.getElementById(id); }
 
 // Initialize VK Bridge
 function initVK() {
-  if (typeof vkBridge === 'undefined') return;
-  vkBridge.send('VKWebAppInit', {})
+  if (typeof vkBridge === 'undefined') return Promise.resolve();
+  return vkBridge.send('VKWebAppInit', {})
     .then(data => {
       console.log('VK init success', data);
-      // Try to (re)create stars after VK init so background isn't lost
-      try { createStars(); } catch (e) {}
-      // subscribe to bridge events - recreate stars on config/visibility changes
-      try {
-        vkBridge.subscribe((e) => {
-          if(!e) return;
-          // For many events it's safe to refresh visual background
-          createStars();
-          updateVKViewport();
-        });
-      } catch(e) {
-        console.warn('vkBridge.subscribe failed', e);
-      }
+      vkInited = true;
+      return true;
     })
-    .catch(error => console.error('VK init error', error));
+    .catch(error => {
+      console.error('VK init error', error);
+      return false;
+    });
 }
 
 // Loader
-let loader = setInterval(() => {
-  progress += 10;
-  const p = $id('progress');
-  if (p) p.innerText = progress + '%';
-  if (progress >= 100) {
-    clearInterval(loader);
-    showScreen('intro');
-    initVK();
-    createStars();
-  }
-}, 200);
+function startLoader() {
+  const loader = setInterval(() => {
+    progress += 10;
+    const p = $id('progress');
+    if (p) p.innerText = progress + '%';
+    if (progress >= 100) {
+      clearInterval(loader);
+      // Ensure at least 3s visible
+      setTimeout(async ()=>{
+        await initVK();
+        showScreen('intro');
+      }, 1500);
+    }
+  }, 300);
+}
 
-// Create stars background
+// Create stars background (once)
 function createStars(count = 100) {
+  if (starsCreated) return;
   const starsContainer = $id('stars');
   if (!starsContainer) return;
   starsContainer.innerHTML = '';
-  // make sure it's visible (some wrappers in VK can change styles)
-  starsContainer.style.display = 'block';
-
   for (let i = 0; i < count; i++) {
     const star = document.createElement('div');
     star.className = 'star';
@@ -66,6 +62,7 @@ function createStars(count = 100) {
     star.style.animationDelay = Math.random() * 3 + 's';
     starsContainer.appendChild(star);
   }
+  starsCreated = true;
 }
 
 // Screen management with history
@@ -76,22 +73,10 @@ function showScreen(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = $id(id);
   if(el) el.classList.add('active');
-
+  
   if(id === 'map' && !planetsPositioned){ 
     positionPlanets(); 
     planetsPositioned = true;
-  }
-
-  // Update VK view height
-  updateVKViewport();
-}
-
-function updateVKViewport() {
-  if (typeof vkBridge !== 'undefined') {
-    vkBridge.send('VKWebAppSetViewSettings', {
-      status_bar_style: 'light',
-      action_bar_color: '#000000'
-    }).catch(console.error);
   }
 }
 
@@ -128,20 +113,23 @@ function typeText(elementId, text, speed = 40){
 // Music
 let music = null;
 
-function toggleMusic(){
+function toggleMusic(forcePlay){
   if (!music) {
-    // Use local file provided in project root
     music = new Audio('StockTune-Echoes Of The Cosmos_1757438077.mp3');
     music.loop = true;
     music.preload = 'auto';
   }
-
-  if(musicPlaying){ 
-    music.pause(); 
-  } else { 
-    music.play().catch(() => {}); 
+  
+  if(forcePlay === true){
+    music.play().catch(()=>{});
+    musicPlaying = true;
+  } else if(forcePlay === false){
+    music.pause();
+    musicPlaying = false;
+  } else {
+    if(musicPlaying){ music.pause(); musicPlaying = false; }
+    else { music.play().catch(()=>{}); musicPlaying = true; }
   }
-  musicPlaying = !musicPlaying;
   updateMusicButton();
 }
 
@@ -153,19 +141,17 @@ function updateMusicButton(){
 
 // Start journey
 function startJourney(){
+  // launch music automatically on first journey start
+  if(!musicPlaying) toggleMusic(true);
   showScreen('dialog');
   typeText('dialog-text', "Я — Хранитель Простора. Пять Аспектов ждут тебя. Лишь собрав их вместе, ты сможешь зажечь Источник и противостоять Критику.");
 }
 
-// Open Prostor community (opens vk.com/prostor)
+// Open Prostor community
 function openProstor() {
   if (typeof vkBridge !== 'undefined') {
-    // Fallback: try opening community preview, but ensure link fallback as well
     try {
-      vkBridge.send('VKWebAppShowCommunityWidgetPreviewBox', {
-        group_id: 1, // placeholder (if invalid, fallback below)
-        type: 'text'
-      }).catch(() => {
+      vkBridge.send('VKWebAppOpenCommunity', { group_id: 1 }).catch(() => {
         window.open('https://vk.com/prostor', '_blank');
       });
     } catch(e) {
@@ -243,10 +229,8 @@ function shareResult() {
     const message = aspectCount === 5 ? 
       'Я собрал все 5 Аспектов и стал Хранителем целого в игре "Сингулярность Простора"! ✨' :
       `Я собрал ${aspectCount} из 5 Аспектов в игре "Сингулярность Простора"!`;
-
-    vkBridge.send('VKWebAppShowWallPostBox', {
-      message: message
-    }).catch(console.error);
+    
+    vkBridge.send('VKWebAppShowWallPostBox', { message }).catch(console.error);
   }
 }
 
@@ -257,34 +241,28 @@ function positionPlanets(){
   const planets = Array.from(map.querySelectorAll('.planet'));
   const mapWidth = map.clientWidth;
   const mapHeight = map.clientHeight;
-
+  
   const padding = 30;
   const safeWidth = mapWidth - padding*2;
   const safeHeight = mapHeight - padding*2;
   const numPlanets = planets.length;
   const centerX = mapWidth/2;
   const centerY = mapHeight/2;
-
-  // compute final positions (ellipse-ish)
+  
   planets.forEach((planet, i) => {
     const angle = (2*Math.PI/numPlanets) * i;
-    const radiusRatio = 0.7 + (0.3*(i/numPlanets));
     const planetW = planet.offsetWidth || 60;
     const radiusX = Math.max(0, safeWidth/2 - planetW);
     const radiusY = Math.max(0, safeHeight/2 - planetW);
     const x = Math.cos(angle)*radiusX + centerX - planetW/2;
     const y = Math.sin(angle)*radiusY + centerY - planetW/2;
-    const finalX = Math.max(padding, Math.min(x, mapWidth - planetW - padding));
-    const finalY = Math.max(padding, Math.min(y, mapHeight - planetW - padding));
-    planet.dataset.finalLeft = finalX;
-    planet.dataset.finalTop = finalY;
+    planet.dataset.finalLeft = Math.max(padding, Math.min(x, mapWidth - planetW - padding));
+    planet.dataset.finalTop = Math.max(padding, Math.min(y, mapHeight - planetW - padding));
   });
-
-  // If first launch not played yet, animate planets flying out from center
+  
   if(!firstLaunchPlayed){
     planets.forEach((planet) => {
       planet.classList.add('no-float');
-      // start at center
       const startX = centerX - (planet.offsetWidth/2);
       const startY = centerY - (planet.offsetHeight/2);
       planet.style.left = startX + 'px';
@@ -292,11 +270,10 @@ function positionPlanets(){
       planet.style.opacity = 0;
       planet.style.transform = 'scale(0.6)';
     });
-
-    // slight delay to allow DOM to apply start positions
+    
     setTimeout(()=> {
       planets.forEach((planet, i) => {
-        const delay = i * 140; // stagger
+        const delay = i * 140;
         setTimeout(()=> {
           planet.style.transition = 'left 700ms cubic-bezier(.2,.9,.3,1), top 700ms cubic-bezier(.2,.9,.3,1), transform 600ms, opacity 300ms';
           planet.style.left = planet.dataset.finalLeft + 'px';
@@ -306,8 +283,7 @@ function positionPlanets(){
         }, delay);
       });
     }, 80);
-
-    // after animation ends, restore floating animation and clear transitions
+    
     const totalTime = 80 + planets.length*140 + 900;
     setTimeout(()=> {
       planets.forEach((planet) => {
@@ -318,7 +294,6 @@ function positionPlanets(){
       firstLaunchPlayed = true;
     }, totalTime);
   } else {
-    // simple place planets to final positions (no animation)
     planets.forEach((planet) => {
       planet.style.left = planet.dataset.finalLeft + 'px';
       planet.style.top = planet.dataset.finalTop + 'px';
@@ -344,11 +319,7 @@ function updateAchievements(){
     const ach = achievements[key];
     const li = document.createElement('li');
     li.className = collected[key] ? 'ach-item done' : 'ach-item undone';
-    li.innerHTML = `
-      <span class="ach-icon">${ach.icon}</span> 
-      <strong>${ach.name}</strong> 
-      ${collected[key] ? '✅' : '❌'}
-    `;
+    li.innerHTML = `<span class="ach-icon">${ach.icon}</span><strong>${ach.name}</strong>${collected[key] ? '✅' : '❌'}`;
     list.appendChild(li);
   }
 }
@@ -371,10 +342,7 @@ function updateInventory(){
       const item = inventoryItems[key];
       const li = document.createElement('li');
       li.className = 'inv-item';
-      li.innerHTML = `
-        <span class="item-icon">${item.icon}</span> 
-        <span>${item.name}</span>
-      `;
+      li.innerHTML = `<span class="item-icon">${item.icon}</span><span>${item.name}</span>`;
       li.onclick = () => showItemModal(item.name, item.desc);
       list.appendChild(li);
     }
@@ -386,10 +354,8 @@ function updateInventory(){
 
 // Item modal
 function showItemModal(title, desc){
-  const titleEl = $id('item-title');
-  const descEl = $id('item-desc');
-  if(titleEl) titleEl.innerText = title;
-  if(descEl) descEl.innerText = desc;
+  $id('item-title').innerText = title;
+  $id('item-desc').innerText = desc;
   showScreen('item-modal');
 }
 
@@ -409,20 +375,12 @@ function resetProgress(){
   showScreen('intro');
 }
 
-// Ensure stars are present on visibility change
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') {
-    try { createStars(); } catch(e) {}
-  }
-});
-
-window.addEventListener('focus', () => {
-  try { createStars(); } catch(e) {}
-});
-
 // Initialize
 document.addEventListener('DOMContentLoaded', ()=>{
-  // Create top controls
+  createStars();
+  startLoader();
+  
+  // Controls
   const top = document.createElement('div');
   top.id = 'top-controls';
   top.innerHTML = `
@@ -432,19 +390,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
     <button id="reset-btn" title="Сброс">↩️</button>
   `;
   document.body.appendChild(top);
-
-  $id('music-btn').addEventListener('click', toggleMusic);
+  
+  $id('music-btn').addEventListener('click', ()=>toggleMusic());
   $id('ach-btn').addEventListener('click', ()=>{ updateAchievements(); showScreen('achievements'); });
   $id('inv-btn').addEventListener('click', ()=>{ updateInventory(); showScreen('inventory'); });
   $id('reset-btn').addEventListener('click', resetProgress);
-
   updateMusicButton();
-
-  // Try to create stars immediately so they exist even if VK changes styles
-  try { createStars(); } catch(e) {}
 });
 
-// Make functions global
+// Export
 window.startJourney = startJourney;
 window.showScreen = showScreen;
 window.enterAspect = enterAspect;
