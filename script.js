@@ -1,10 +1,10 @@
-// script.js final3_fixed
-
+// script.js
 let progress = 0;
 let collected = {};
 let currentAspect = null;
 let musicPlaying = false;
 let previousScreen = 'intro';
+let screenHistory = ['intro'];
 
 function $id(id){ return document.getElementById(id); }
 
@@ -23,22 +23,32 @@ let loader = setInterval(() => {
 function showScreen(id){
   if(id !== 'achievements' && id !== 'inventory' && id !== 'item-modal'){
     previousScreen = id;
+    screenHistory.push(id);
   }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = $id(id);
   if(el) el.classList.add('active');
   if(id === 'map'){ setTimeout(positionPlanets, 50); }
 }
-function goBack(){ showScreen(previousScreen); }
+
+function goBack(){
+  if(screenHistory.length > 1) {
+    screenHistory.pop(); // Remove current screen
+    const prevScreen = screenHistory[screenHistory.length - 1];
+    showScreen(prevScreen);
+  } else {
+    showScreen('intro');
+  }
+}
 
 /* Typing text with skip */
 function typeText(elementId, text, speed = 40){
   const el = $id(elementId);
   if(!el) return;
   let i = 0;
-  el.innerText = '';
+  el.innerHTML = '';
   let interval = setInterval(() => {
-    el.innerText += text.charAt(i);
+    el.innerHTML += text.charAt(i);
     i++;
     if(i >= text.length){
       clearInterval(interval);
@@ -46,7 +56,7 @@ function typeText(elementId, text, speed = 40){
   }, speed);
   el.onclick = () => {
     clearInterval(interval);
-    el.innerText = text;
+    el.innerHTML = text;
   };
 }
 
@@ -57,10 +67,14 @@ function updateMusicButton(){
   if(!btn) return;
   btn.textContent = musicPlaying ? "🔊" : "🔇";
 }
+
 function toggleMusic(){
   if(!music) return;
-  if(musicPlaying){ music.pause(); }
-  else { music.play().catch(()=>{}); }
+  if(musicPlaying){ 
+    music.pause(); 
+  } else { 
+    music.play().catch(()=>{}); 
+  }
   musicPlaying = !musicPlaying;
   updateMusicButton();
 }
@@ -70,7 +84,10 @@ function startJourney(){
   showScreen('dialog');
   typeText('dialog-text', "Я — Хранитель Простора. Пять Аспектов ждут тебя. Лишь собрав их вместе, ты сможешь зажечь Источник и противостоять Критику.");
   if(!musicPlaying && music){
-    music.play().then(()=>{ musicPlaying = true; updateMusicButton(); }).catch(()=>{});
+    music.play().then(()=>{ 
+      musicPlaying = true; 
+      updateMusicButton(); 
+    }).catch(()=>{});
   }
 }
 
@@ -200,6 +217,7 @@ const achievements = {
   vision: "Провидец",
   will: "Несгибаемая Воля"
 };
+
 function updateAchievements(){
   const list = $id('achievements-list');
   if(!list) return;
@@ -207,7 +225,13 @@ function updateAchievements(){
   for(let key in achievements){
     const li = document.createElement('li');
     li.className = collected[key] ? 'ach-done' : 'ach-undone';
-    li.innerHTML = `<span class="ach-icon">${inventoryItems[key].icon}</span> <strong>${achievements[key]}</strong> ${collected[key] ? '✅' : '❌'}`;
+    li.innerHTML = `
+      <span class="ach-icon">${inventoryItems[key].icon}</span> 
+      <div class="ach-content">
+        <strong>${achievements[key]}</strong>
+        <span class="ach-status">${collected[key] ? '✅ Получено' : '❌ Не получено'}</span>
+      </div>
+    `;
     list.appendChild(li);
   }
 }
@@ -229,11 +253,18 @@ function updateInventory(){
     if(collected[key]){
       const item = inventoryItems[key];
       const li = document.createElement('li');
-      li.innerHTML = `<span style="font-size:20px;margin-right:8px;">${item.icon}</span> ${item.name}`;
+      li.className = 'inventory-item';
+      li.innerHTML = `
+        <span class="item-icon">${item.icon}</span> 
+        <span class="item-name">${item.name}</span>
+      `;
       li.style.cursor = 'pointer';
       li.onclick = ()=> showItemModal(item.name, item.desc);
       list.appendChild(li);
     }
+  }
+  if(list.children.length === 0) {
+    list.innerHTML = '<li style="text-align:center;color:#888;">Инвентарь пуст</li>';
   }
 }
 
@@ -245,23 +276,22 @@ function showItemModal(title, desc){
   if(descEl) descEl.innerText = desc;
   showScreen('item-modal');
 }
-function closeItemModal(){ showScreen('inventory'); }
 
-/* Reset */
-function resetProgress(){
-  collected = {};
-  document.querySelectorAll('.planet').forEach(p => p.classList.remove('completed'));
-  updateAchievements();
-  updateInventory();
-  showScreen('intro');
+function closeItemModal(){
+  showScreen('inventory');
 }
 
-/* Expose */
-window.startJourney = startJourney;
-window.showScreen = showScreen;
-window.enterAspect = enterAspect;
-window.ending = ending;
-window.resetProgress = resetProgress;
-window.closeItemModal = closeItemModal;
-window.toggleMusic = toggleMusic;
-window.goBack = goBack;
+/* Reset progress */
+function resetProgress(){
+  collected = {};
+  musicPlaying = false;
+  if(music) music.pause();
+  document.querySelectorAll('.planet').forEach(p => p.classList.remove('completed'));
+  showScreen('intro');
+  screenHistory = ['intro'];
+}
+
+/* Initialize */
+setTimeout(()=>{
+  if(progress >= 100) showScreen('intro');
+}, 3000);

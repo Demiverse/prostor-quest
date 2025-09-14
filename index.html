@@ -1,3 +1,4 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -22,6 +23,7 @@
 
   <div id="dialog" class="screen">
     <div class="dialog-box">
+      <div class="dialog-header">Хранитель Простора</div>
       <p id="dialog-text"></p>
     </div>
     <button class="btn" onclick="showScreen('map')">Продолжить</button>
@@ -50,13 +52,16 @@
   <div id="final" class="screen">
     <h2>Хранитель раскрывает истину...</h2>
     <div class="dialog-box">
+      <div class="dialog-header">Хранитель Простора</div>
       <p>
         Он и есть Критик. «Каждый Аспект самодостаточен.
         Присоединись ко мне — и мир обретёт хаос без уз».
       </p>
     </div>
-    <button class="btn" onclick="ending('chaos')">Принять сторону Критика</button>
-    <button class="btn" onclick="ending('harmony')">Силой Аспектов победить его</button>
+    <div class="dialog-actions two-buttons">
+      <button class="btn" onclick="ending('chaos')">Принять сторону Критика</button>
+      <button class="btn" onclick="ending('harmony')">Силой Аспектов победить его</button>
+    </div>
   </div>
 
   <div id="ending" class="screen">
@@ -64,13 +69,13 @@
     <div class="dialog-box">
       <p id="ending-text"></p>
     </div>
+    <button class="btn" onclick="resetProgress()">Начать заново</button>
   </div>
 
   <!-- Музыка -->
   <audio id="bg-music" loop>
     <source src="StockTune-Echoes Of The Cosmos_1757438077.mp3" type="audio/mpeg">
   </audio>
-  <button id="music-toggle" class="btn" style="position:fixed;top:20px;right:20px;z-index:1000;">🔇</button>
 
   <!-- vkBridge -->
   <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
@@ -90,28 +95,17 @@
     });
   </script>
 
-
   <div id="achievements" class="screen">
     <h2>Достижения</h2>
     <ul id="achievements-list"></ul>
-    <button class="btn" onclick="showScreen('map')">Назад</button>
-  </div>
-
-  <div id="settings" class="screen">
-    <h2>Настройки</h2>
-    <label><input type="checkbox" id="toggle-music" checked> Музыка</label><br>
-    <label><input type="checkbox" id="toggle-animations" checked> Анимации</label><br>
-    <button class="btn" onclick="resetProgress()">Сбросить прогресс</button><br>
-    <button class="btn" onclick="showScreen('map')">Назад</button>
+    <button class="btn" onclick="goBack()">Назад</button>
   </div>
 
   <div id="inventory" class="screen">
     <h2>Инвентарь</h2>
     <ul id="inventory-list"></ul>
-    <button class="btn" onclick="showScreen('map')">Назад</button>
+    <button class="btn" onclick="goBack()">Назад</button>
   </div>
-
-  <script src="script.js?v=6"></script>
 
   <div id="item-modal" class="screen" style="background: rgba(0,0,0,0.7);">
     <div class="dialog-box" style="max-width:500px; margin:auto;">
@@ -123,5 +117,6 @@
     </div>
   </div>
 
+  <script src="script.js?v=7"></script>
 </body>
 </html>
