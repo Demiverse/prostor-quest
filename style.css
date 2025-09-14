@@ -1,6 +1,7 @@
+
 body {
   margin: 0;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Inter', sans-serif;
   color: #fff;
   overflow: hidden;
   height: 100vh;
@@ -9,12 +10,14 @@ body {
   align-items: center;
   background: #000;
 }
+
 #stars {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
   z-index: -1;
 }
+
 .screen {
   display: none;
   text-align: center;
@@ -23,140 +26,136 @@ body {
   height: 100%;
   padding: 20px;
 }
+
 .active {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  animation: fadeIn 1s ease forwards;
+  animation: fadeIn 0.6s ease forwards;
 }
+
 @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+
+/* Кнопки */
+.btn {
+  margin: 16px;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 999px;
+  background: #007AFF;
+  color: #fff;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+.btn:hover {
+  background: #005FCC;
+  transform: translateY(-2px);
+}
+.btn:active {
+  transform: translateY(0);
+}
+
+/* Диалоговые окна */
 .dialog-box {
   width: 90%;
   max-width: 800px;
-  background: rgba(20, 20, 40, 0.7);
-  border: 2px solid rgba(0, 200, 255, 0.8);
-  border-radius: 20px;
+  background: #fff;
+  border-radius: 16px;
   padding: 20px;
   margin-top: auto;
-  font-size: 18px;
-  line-height: 1.6;
+  font-size: 16px;
+  line-height: 1.5;
   text-align: left;
-  box-shadow: 0 0 20px rgba(0,200,255,0.5);
-  backdrop-filter: blur(8px);
+  color: #000;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
 }
+
 .dialog-box p {
   white-space: pre-wrap;
   word-wrap: break-word;
   max-width: 100%;
 }
-.btn {
-  margin: 20px;
-  padding: 15px 30px;
-  border: none;
-  border-radius: 30px;
-  background: linear-gradient(135deg, #1e90ff, #ff69b4);
-  color: #fff;
-  font-weight: bold;
-  font-size: 18px;
-  cursor: pointer;
-  box-shadow: 0 0 20px rgba(255,105,180,0.8);
-  transition: transform 0.3s, box-shadow 0.3s;
-}
-.btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 30px rgba(30,144,255,1);
-}
+
+/* Карта */
 .map {
   position: relative;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
 }
+
 .planet {
   position: absolute;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-weight: bold;
+  font-weight: 600;
   cursor: pointer;
   border-radius: 50%;
-  box-shadow: 0 0 25px rgba(255,255,255,0.8);
+  background: #fff;
+  color: #000;
+  box-shadow: 0 0 15px rgba(255,255,255,0.6);
   transition: transform 0.3s, box-shadow 0.3s;
   z-index: 2;
   text-align: center;
   word-wrap: break-word;
-  /* Анимация движения */
   animation: float 6s ease-in-out infinite;
 }
+
 .aspect-btn {
   width: 70px;
   height: 70px;
-  background: radial-gradient(circle, #fff 0%, #1e90ff 80%);
   font-size: 14px;
 }
+
 .aspect-btn:hover {
-  transform: scale(1.2);
-  box-shadow: 0 0 40px rgba(255,255,255,1);
+  transform: scale(1.1);
+  box-shadow: 0 0 25px rgba(255,255,255,1);
 }
+
 .center {
   width: 100px;
   height: 100px;
-  background: radial-gradient(circle, #ff69b4 0%, #8a2be2 80%);
   font-size: 16px;
-  box-shadow: 0 0 50px rgba(255,105,180,1), 0 0 100px rgba(138,43,226,0.8);
-  /* Центральная планета движется по-другому */
+  background: #007AFF;
+  color: #fff;
+  box-shadow: 0 0 30px rgba(0,122,255,0.8);
   animation: pulse 4s ease-in-out infinite;
 }
+
 .completed {
-  background: radial-gradient(circle, #7fff00 0%, #32cd32 80%) !important;
+  background: #34C759 !important;
+  color: #fff !important;
   animation: glow 2s ease-in-out infinite alternate !important;
 }
 
-/* Анимация плавающего движения */
+/* Анимация */
 @keyframes float {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  33% {
-    transform: translateY(-5px) rotate(1deg);
-  }
-  66% {
-    transform: translateY(5px) rotate(-1deg);
-  }
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(-5px) rotate(1deg); }
+  66% { transform: translateY(5px) rotate(-1deg); }
 }
 
-/* Анимация пульсации для центральной планеты */
 @keyframes pulse {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 0 50px rgba(255,105,180,1), 0 0 100px rgba(138,43,226,0.8);
+    box-shadow: 0 0 30px rgba(0,122,255,0.8);
   }
   50% {
     transform: scale(1.05);
-    box-shadow: 0 0 70px rgba(255,105,180,1), 0 0 130px rgba(138,43,226,0.9);
+    box-shadow: 0 0 40px rgba(0,122,255,1);
   }
 }
 
-/* Анимация свечения для завершённых планет */
 @keyframes glow {
-  from {
-    box-shadow: 0 0 25px rgba(127,255,0,0.8);
-  }
-  to {
-    box-shadow: 0 0 40px rgba(127,255,0,1), 0 0 60px rgba(50,205,50,0.6);
-  }
+  from { box-shadow: 0 0 15px rgba(52,199,89,0.6); }
+  to { box-shadow: 0 0 30px rgba(52,199,89,1); }
 }
 
-/* Разные задержки для анимации планет */
-.planet:nth-child(1) { animation-delay: 0s; }
-.planet:nth-child(2) { animation-delay: -1s; }
-.planet:nth-child(3) { animation-delay: -2s; }
-.planet:nth-child(4) { animation-delay: -3s; }
-.planet:nth-child(5) { animation-delay: -4s; }
-.planet:nth-child(6) { animation-delay: -5s; }
-
-/* Медиа-запросы для адаптивности */
+/* Адаптив */
 @media (max-width: 768px) {
   .aspect-btn {
     width: 60px;
@@ -164,11 +163,14 @@ body {
     font-size: 12px;
     padding: 2px;
   }
-  
   .center {
     width: 80px;
     height: 80px;
     font-size: 14px;
+  }
+  .btn {
+    padding: 10px 20px;
+    font-size: 15px;
   }
 }
 
@@ -176,35 +178,15 @@ body {
   .aspect-btn {
     width: 50px;
     height: 50px;
-    font-size: 10px;
+    font-size: 11px;
   }
-  
   .center {
     width: 70px;
     height: 70px;
-    font-size: 12px;
+    font-size: 13px;
   }
-  
-  .btn {
-    padding: 12px 24px;
-    font-size: 16px;
-  }
-  
   .dialog-box {
-    font-size: 16px;
-    padding: 15px;
-  }
-  
-  /* Меньшая амплитуда движения на мобильных */
-  @keyframes float {
-    0%, 100% {
-      transform: translateY(0) rotate(0deg);
-    }
-    33% {
-      transform: translateY(-3px) rotate(0.5deg);
-    }
-    66% {
-      transform: translateY(3px) rotate(-0.5deg);
-    }
+    font-size: 15px;
+    padding: 14px;
   }
 }
