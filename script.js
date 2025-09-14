@@ -1,88 +1,77 @@
-
-const inventoryItems = {
-  form: { icon: "🔷", name: "Артефакт Формы", desc: "Символ совершенства и идеальной гармонии." },
-  sound: { icon: "🎵", name: "Артефакт Звука", desc: "Символ музыки и вибраций, объединяющих всё." },
-  narrative: { icon: "📜", name: "Артефакт Нарратива", desc: "Символ историй, связывающих миры." },
-  vision: { icon: "👁️", name: "Артефакт Видения", desc: "Символ прозрения и ясности." },
-  will: { icon: "🔥", name: "Артефакт Воли", desc: "Символ силы, которая ведёт вперёд." }
-};
-
-
+// Clean rebuilt script.js — preserves game logic, achievements, inventory, settings, modal
+/* Global state */
 let progress = 0;
 let collected = {};
 let currentAspect = null;
+let musicPlaying = false;
+let animationsEnabled = true;
 
+/* Helper: safe get element */
+function $id(id){ return document.getElementById(id); }
+
+/* Loader */
 let loader = setInterval(() => {
   progress += 10;
-  document.getElementById('progress').innerText = progress + '%';
+  const p = $id('progress');
+  if (p) p.innerText = progress + '%';
   if (progress >= 100) {
     clearInterval(loader);
     showScreen('intro');
   }
 }, 200);
 
-function showScreen(id) {
+/* Screen management */
+function showScreen(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  
-  // При переключении экрана перерисовываем планеты
-  if (id === 'map') {
+  const el = $id(id);
+  if(el) el.classList.add('active');
+  if(id === 'map') {
     setTimeout(positionPlanets, 50);
   }
 }
 
-function typeText(elementId, text, speed = 40) {
+/* Typing text */
+function typeText(elementId, text, speed = 40){
+  const el = $id(elementId);
+  if(!el) return;
   let i = 0;
-  let el = document.getElementById(elementId);
-  el.innerText = "";
-  let interval;
-
-  function finish() {
-    clearInterval(interval);
-    el.innerText = text;
-    el.onclick = null;
-  }
-
-  interval = setInterval(() => {
+  el.innerText = '';
+  el.onclick = null;
+  const interval = setInterval(() => {
     el.innerText += text.charAt(i);
     i++;
-    if (i >= text.length) finish();
+    if(i >= text.length){
+      clearInterval(interval);
+      el.onclick = null;
+    }
   }, speed);
-
-  el.onclick = finish;
 }
 
-// Музыка
+/* Music */
 const music = document.getElementById("bg-music");
-const musicBtn = document.getElementById("music-toggle");
-let musicPlaying = false;
-
-musicBtn.onclick = () => {
-  if (musicPlaying) {
-    music.pause();
-    musicBtn.textContent = "🔇";
-  } else {
-    music.play();
-    musicBtn.textContent = "🔊";
-  }
+function updateMusicButton(){
+  const btn = $id('music-toggle');
+  if(!btn) return;
+  btn.textContent = musicPlaying ? "🔊" : "🔇";
+}
+function toggleMusic(){
+  if(!music) return;
+  if(musicPlaying){ music.pause(); }
+  else { music.play().catch(()=>{}); }
   musicPlaying = !musicPlaying;
-};
+  updateMusicButton();
+}
 
-function startJourney() {
+/* Start journey */
+function startJourney(){
   showScreen('dialog');
-  typeText("dialog-text",
-    "Я — Хранитель. Пять Аспектов ждут тебя. Лишь собрав их вместе, ты сможешь зажечь Источник и противостоять Критику."
-  );
-  if (!musicPlaying) {
-    music.play().then(() => {
-      musicBtn.textContent = "🔊";
-      musicPlaying = true;
-    }).catch(err => {
-      console.log("Автовоспроизведение заблокировано:", err);
-    });
+  typeText('dialog-text', "Я — Хранитель. Пять Аспектов ждут тебя. Лишь собрав их вместе, ты сможешь зажечь Источник и противостоять Критику.");
+  if(!musicPlaying && music){
+    music.play().then(()=>{ musicPlaying = true; updateMusicButton(); }).catch(()=>{});
   }
 }
 
+/* Aspects data */
 const aspects = {
   form: {title: 'Аспект Формы',task: 'Какая фигура считается совершенной в геометрии?',puzzle: `<input type="text" id="answer" placeholder="Твой ответ">`,answer: 'круг'},
   sound: {title: 'Аспект Звука',task: 'Что из этого — не музыкальный жанр?',puzzle: `<select id="answer"><option>Рок</option><option>Джаз</option><option>Импрессионизм</option><option>Хип-хоп</option></select>`,answer: 'Импрессионизм'},
@@ -91,134 +80,169 @@ const aspects = {
   will: {title: 'Аспект Воли',task: 'Что важнее всего для завершения любого проекта?',puzzle: `<select id="answer"><option>Идея</option><option>Воля</option><option>Инструменты</option></select>`,answer: 'Воля'}
 };
 
-function enterAspect(aspect) {
+/* Enter aspect screen */
+function enterAspect(aspect){
   currentAspect = aspect;
   showScreen('aspect');
-  document.getElementById('aspect-title').innerText = aspects[aspect].title;
-  document.getElementById('aspect-task').innerText = aspects[aspect].task;
-  document.getElementById('aspect-puzzle').innerHTML = aspects[aspect].puzzle;
-  document.getElementById('aspect-error').style.display = 'none';
-
-  document.getElementById('aspect-submit').onclick = () => {
-    let val = document.getElementById('answer').value.trim();
-    if (val.toLowerCase() === aspects[aspect].answer.toLowerCase()) {
-      completeAspect();
-    } else {
-      showError('Ответ неверный. Попробуй снова!');
-    }
-  };
+  const a = aspects[aspect];
+  if(!a) return;
+  $id('aspect-title').innerText = a.title;
+  $id('aspect-task').innerText = a.task;
+  $id('aspect-puzzle').innerHTML = a.puzzle;
+  $id('aspect-error').style.display = 'none';
+  const submit = $id('aspect-submit');
+  if(submit){
+    submit.onclick = () => {
+      const ansEl = $id('answer');
+      if(!ansEl){
+        showError('Нет поля ответа');
+        return;
+      }
+      let val = (ansEl.value || '').toString().trim();
+      if(val.toLowerCase() === a.answer.toLowerCase()){
+        completeAspect();
+      } else {
+        showError('Ответ неверный. Попробуй снова!');
+      }
+    };
+  }
 }
 
-function showError(msg) {
-  let err = document.getElementById('aspect-error');
+/* Errors */
+function showError(msg){
+  const err = $id('aspect-error');
+  if(!err) return;
   err.innerText = msg;
   err.style.display = 'block';
-  setTimeout(() => {
-    err.style.display = 'none';
-  }, 2000);
+  setTimeout(()=>{ err.style.display = 'none'; }, 2000);
 }
 
-function completeAspect() {
+/* Complete aspect */
+function completeAspect(){
+  if(!currentAspect) return;
   collected[currentAspect] = true;
-  document.getElementById(currentAspect).classList.add('completed');
+  const el = $id(currentAspect);
+  if(el) el.classList.add('completed');
+  updateAchievements();
+  updateInventory();
   showScreen('map');
-  if (Object.keys(collected).length === 5) {showScreen('final');}
-}
-
-function ending(choice) {
-  showScreen('ending');
-  if (choice === 'chaos') {
-    document.getElementById('ending-title').innerText = 'Ты выбрал Хаос';
-    document.getElementById('ending-text').innerText = 'Мир распался. Ты стал Проводником хаоса. (🌑)';
-  } else {
-    document.getElementById('ending-title').innerText = 'Ты сохранил Единство';
-    document.getElementById('ending-text').innerText = 'Источник воссиял вновь. Ты стал Хранителем целого. (✨)';
+  if(Object.keys(collected).length === 5){
+    showScreen('final');
   }
 }
 
-// Улучшенное позиционирование планет
-function positionPlanets() {
-  const map = document.querySelector(".map");
-  const planets = map.querySelectorAll(".aspect-btn");
-  const center = map.querySelector(".center");
+/* Ending */
+function ending(choice){
+  showScreen('ending');
+  if(choice === 'chaos'){
+    $id('ending-title').innerText = 'Ты выбрал Хаос';
+    $id('ending-text').innerText = 'Мир распался. Ты стал Проводником хаоса. (🌑)';
+  } else {
+    $id('ending-title').innerText = 'Ты сохранил Единство';
+    $id('ending-text').innerText = 'Источник воссиял вновь. Ты стал Хранителем целого. (✨)';
+  }
+}
 
+/* Position planets (same logic as before) */
+function positionPlanets(){
+  const map = document.querySelector('.map');
+  if(!map) return;
+  const planets = map.querySelectorAll('.aspect-btn');
+  const center = map.querySelector('.center');
   const mapWidth = map.offsetWidth;
   const mapHeight = map.offsetHeight;
-  
-  // Центральная планета в центре
-  center.style.left = (mapWidth - center.offsetWidth) / 2 + "px";
-  center.style.top = (mapHeight - center.offsetHeight) / 2 + "px";
-
-  // Безопасная зона (отступ от краев)
+  if(center){
+    center.style.left = (mapWidth - center.offsetWidth) / 2 + 'px';
+    center.style.top = (mapHeight - center.offsetHeight) / 2 + 'px';
+  }
   const padding = 40;
-  const safeWidth = mapWidth - padding * 2;
-  const safeHeight = mapHeight - padding * 2;
-
-  // Эллиптическое распределение для лучшего использования пространства
+  const safeWidth = mapWidth - padding*2;
+  const safeHeight = mapHeight - padding*2;
   const numPlanets = planets.length;
-  const centerX = mapWidth / 2;
-  const centerY = mapHeight / 2;
-
-  // Автоматическое определение оптимального радиуса
-  const maxRadiusX = safeWidth / 2 - Math.max(...Array.from(planets).map(p => p.offsetWidth));
-  const maxRadiusY = safeHeight / 2 - Math.max(...Array.from(planets).map(p => p.offsetHeight));
-  
-  // Используем эллипс для лучшего заполнения пространства
-  planets.forEach((planet, i) => {
-    const angle = (2 * Math.PI / numPlanets) * i;
-    
-    // Динамическое распределение радиусов
-    const radiusRatio = 0.7 + (0.3 * (i / numPlanets)); // От 70% до 100%
+  const centerX = mapWidth/2;
+  const centerY = mapHeight/2;
+  const maxPlanetW = Math.max(...Array.from(planets).map(p => p.offsetWidth || 70));
+  const maxRadiusX = Math.max(0, safeWidth/2 - maxPlanetW);
+  const maxRadiusY = Math.max(0, safeHeight/2 - maxPlanetW);
+  planets.forEach((planet,i) => {
+    const angle = (2*Math.PI/numPlanets) * i;
+    const radiusRatio = 0.7 + (0.3*(i/numPlanets));
     const radiusX = maxRadiusX * radiusRatio;
     const radiusY = maxRadiusY * radiusRatio;
-
-    const x = Math.cos(angle) * radiusX + centerX - planet.offsetWidth / 2;
-    const y = Math.sin(angle) * radiusY + centerY - planet.offsetHeight / 2;
-
-    // Проверка границ
+    const x = Math.cos(angle)*radiusX + centerX - planet.offsetWidth/2;
+    const y = Math.sin(angle)*radiusY + centerY - planet.offsetHeight/2;
     const finalX = Math.max(padding, Math.min(x, mapWidth - planet.offsetWidth - padding));
     const finalY = Math.max(padding, Math.min(y, mapHeight - planet.offsetHeight - padding));
-
-    planet.style.left = finalX + "px";
-    planet.style.top = finalY + "px";
-    
-    // Уникальная задержка анимации для каждой планеты
-    planet.style.animationDelay = `${i * 0.5}s`;
+    planet.style.left = finalX + 'px';
+    planet.style.top = finalY + 'px';
+    planet.style.animationDelay = (i*0.5) + 's';
   });
 }
 
-// Автоматическое обновление при изменении размера
+/* Responsive */
 let resizeTimer;
-window.addEventListener("resize", () => {
+window.addEventListener('resize', ()=>{
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(positionPlanets, 250);
+  resizeTimer = setTimeout(()=>{ positionPlanets(); }, 250);
 });
-
-// Инициализация после полной загрузки
-window.addEventListener("load", () => {
+window.addEventListener('load', ()=>{
   positionPlanets();
-  // Дополнительная проверка после небольшой задержки
-  setTimeout(positionPlanets, 100);
+  setTimeout(positionPlanets,100);
 });
 
-// Дополнительная обработка для VK Mini Apps
-document.addEventListener('DOMContentLoaded', function() {
-  // Проверка типа устройства
+/* VK Mini Apps detection */
+document.addEventListener('DOMContentLoaded', ()=>{
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  
-  if (isMobile) {
-    document.body.classList.add('mobile');
-  } else {
-    document.body.classList.add('desktop');
-  }
-  
-  // Перепозиционирование при изменении ориентации
-  window.addEventListener('orientationchange', function() {
-    setTimeout(positionPlanets, 300);
+  if(isMobile) document.body.classList.add('mobile'); else document.body.classList.add('desktop');
+
+  // Top controls (achievements, settings, music)
+  const top = document.createElement('div');
+  top.id = 'top-controls';
+  top.innerHTML = `
+    <button id="ach-btn" title="Достижения">🏅</button>
+    <button id="settings-btn" title="Настройки">⚙️</button>
+    <button id="music-toggle" title="Музыка">🔇</button>
+  `;
+  document.body.appendChild(top);
+  $id('music-toggle').addEventListener('click', toggleMusic);
+  $id('ach-btn').addEventListener('click', ()=>{ updateAchievements(); showScreen('achievements'); });
+  $id('settings-btn').addEventListener('click', ()=>{ showScreen('settings'); updateSettingsUI(); });
+
+  // Add dialog headers and backpack icon to each dialog-box
+  document.querySelectorAll('.dialog-box').forEach(box => {
+    // header badge
+    const header = document.createElement('div');
+    header.className = 'dialog-header';
+    header.textContent = 'Хранитель Простора';
+    box.appendChild(header);
+    // inventory icon
+    const inv = document.createElement('div');
+    inv.className = 'dialog-inventory';
+    inv.textContent = '🎒';
+    inv.onclick = ()=>{ updateInventory(); showScreen('inventory'); };
+    box.appendChild(inv);
+    // move dialog button area to the right inside dialog
+    const actions = box.querySelector('.dialog-actions');
+    if(actions){
+      actions.style.justifyContent = 'flex-end';
+    }
   });
+
+  // Setup settings toggles
+  $id('toggle-music').addEventListener('change', (e)=>{
+    if(e.target.checked){ if(!musicPlaying){ toggleMusic(); } }
+    else { if(musicPlaying){ toggleMusic(); } }
+  });
+  $id('toggle-animations').addEventListener('change', (e)=>{
+    animationsEnabled = e.target.checked;
+    document.body.classList.toggle('no-animations', !animationsEnabled);
+  });
+
+  // music initial state
+  updateMusicButton();
 });
 
-// Ачивки
+/* Achievements */
 const achievements = {
   form: "Покоритель Формы",
   sound: "Мастер Звука",
@@ -226,131 +250,69 @@ const achievements = {
   vision: "Провидец",
   will: "Несгибаемая Воля"
 };
-
-function updateAchievements() {
-  const list = document.getElementById('achievements-list');
-  list.innerHTML = "";
-  for (let key in achievements) {
+function updateAchievements(){
+  const list = $id('achievements-list');
+  if(!list) return;
+  list.innerHTML = '';
+  for(let key in achievements){
     const li = document.createElement('li');
-    li.textContent = achievements[key] + (collected[key] ? " ✅" : " ❌");
+    li.innerHTML = `<strong>${achievements[key]}</strong> - ${collected[key] ? '<span>Получено ✅</span>' : '<span>Не получено</span>'}`;
     list.appendChild(li);
   }
 }
 
-// Инвентарь
-
-
-
-  form: "Артефакт Формы",
-  sound: "Артефакт Звука",
-  narrative: "Артефакт Нарратива",
-  vision: "Артефакт Видения",
-  will: "Артефакт Воли"
+/* Inventory items */
+const inventoryItems = {
+  form: { icon: "🔷", name: "Артефакт Формы", desc: "Символ совершенства и идеальной гармонии." },
+  sound: { icon: "🎵", name: "Артефакт Звука", desc: "Символ музыки и вибраций, объединяющих всё." },
+  narrative: { icon: "📜", name: "Артефакт Нарратива", desc: "Символ историй, связывающих миры." },
+  vision: { icon: "👁️", name: "Артефакт Видения", desc: "Символ прозрения и ясности." },
+  will: { icon: "🔥", name: "Артефакт Воли", desc: "Символ силы, которая ведёт вперёд." }
 };
 
-function updateInventory() {
-  const list = document.getElementById('inventory-list');
-  list.innerHTML = "";
-  for (let key in collected) {
-    if (collected[key]) {
+/* Update inventory list (clickable items) */
+function updateInventory(){
+  const list = $id('inventory-list');
+  if(!list) return;
+  list.innerHTML = '';
+  for(let key in inventoryItems){
+    if(collected[key]){
+      const item = inventoryItems[key];
       const li = document.createElement('li');
-      li.innerHTML = `<span style="font-size:20px;margin-right:8px;">${inventoryItems[key].icon}</span> ${inventoryItems[key].name}`;
-      li.style.cursor = "pointer";
-      li.onclick = () => showItemModal(inventoryItems[key].name, inventoryItems[key].desc);
-      list.appendChild(li);
-    }
-  }
-}</span> ${inventoryItems[key].name}`;
-      li.style.cursor = "pointer";
-      li.onclick = () => showItemModal(inventoryItems[key].name, inventoryItems[key].desc);
-      list.appendChild(li);
-    }
-  }
-}</span> ${inventoryItems[key].name} - описание заглушка`;
-      list.appendChild(li);
-    }
-  }
-}
-  const list = document.getElementById('inventory-list');
-  list.innerHTML = "";
-  for (let key in collected) {
-    if (collected[key]) {
-      const li = document.createElement('li');
-      li.textContent = inventoryItems[key] + " - описание заглушка";
+      li.innerHTML = `<span style="font-size:20px;margin-right:8px;">${item.icon}</span> ${item.name}`;
+      li.style.cursor = 'pointer';
+      li.onclick = ()=> showItemModal(item.name, item.desc);
       list.appendChild(li);
     }
   }
 }
 
-// Сброс прогресса
-function resetProgress() {
+/* Item modal */
+function showItemModal(title, desc){
+  const titleEl = $id('item-title');
+  const descEl = $id('item-desc');
+  if(titleEl) titleEl.innerText = title;
+  if(descEl) descEl.innerText = desc;
+  showScreen('item-modal');
+}
+function closeItemModal(){ showScreen('inventory'); }
+
+/* Reset progress */
+function resetProgress(){
   collected = {};
   document.querySelectorAll('.planet').forEach(p => p.classList.remove('completed'));
+  updateAchievements();
+  updateInventory();
   showScreen('intro');
 }
 
-// Кнопки в диалоге
-document.addEventListener("DOMContentLoaded", () => {
-  // Добавим верхние кнопки
-  const top = document.createElement("div");
-  top.id = "top-controls";
-  top.innerHTML = `
-    <button onclick="showScreen('achievements')">🏅</button>
-    <button onclick="showScreen('settings')">⚙️</button>
-    <button id="music-toggle">🔇</button>
-  `;
-  document.body.appendChild(top);
+/* Expose some functions to window for inline HTML buttons */
+window.startJourney = startJourney;
+window.showScreen = showScreen;
+window.enterAspect = enterAspect;
+window.ending = ending;
+window.resetProgress = resetProgress;
+window.closeItemModal = closeItemModal;
+window.toggleMusic = toggleMusic;
 
-  // Добавим рюкзак к диалогам
-  document.querySelectorAll('.dialog-box').forEach(box => {
-    const header = document.createElement("div");
-    header.className = "dialog-header";
-    header.textContent = "Хранитель Простора";
-    box.appendChild(header);
-
-    const inv = document.createElement("div");
-    inv.className = "dialog-inventory";
-    inv.textContent = "🎒";
-    inv.onclick = () => { updateInventory(); showScreen('inventory'); };
-    box.appendChild(inv);
-  });
-});
-
-
-// Модалка предмета
-function showItemModal(title, desc) {
-  document.getElementById("item-title").innerText = title;
-  document.getElementById("item-desc").innerText = desc;
-  showScreen("item-modal");
-}
-
-function closeItemModal() {
-  showScreen("inventory");
-}
-
-// Переопределяем updateInventory для кликабельных предметов
-function updateInventory() {
-  const list = document.getElementById('inventory-list');
-  list.innerHTML = "";
-  for (let key in collected) {
-    if (collected[key]) {
-      const li = document.createElement('li');
-      li.innerHTML = `<span style="font-size:20px;margin-right:8px;">${inventoryItems[key].icon}</span> ${inventoryItems[key].name}`;
-      li.style.cursor = "pointer";
-      li.onclick = () => showItemModal(inventoryItems[key].name, inventoryItems[key].desc);
-      list.appendChild(li);
-    }
-  }
-}</span> ${inventoryItems[key].name}`;
-      li.style.cursor = "pointer";
-      li.onclick = () => showItemModal(inventoryItems[key].name, inventoryItems[key].desc);
-      list.appendChild(li);
-    }
-  }
-}</span> ${inventoryItems[key].name}`;
-      li.style.cursor = "pointer";
-      li.onclick = () => showItemModal(inventoryItems[key].name, "Описание этого артефакта появится позже...");
-      list.appendChild(li);
-    }
-  }
-}
+// End of script
