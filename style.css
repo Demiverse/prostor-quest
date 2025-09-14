@@ -214,3 +214,37 @@ body {
   border-radius: 8px;
   color: #fff;
 }
+
+
+/* Achievements styling */
+#achievements-list {
+  list-style: none;
+  padding: 0;
+}
+#achievements-list li {
+  margin: 8px 0;
+  padding: 10px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+#achievements-list li.ach-done {
+  background: rgba(0, 200, 0, 0.2);
+}
+#achievements-list li.ach-undone {
+  background: rgba(200, 0, 0, 0.2);
+}
+.ach-icon {
+  font-size: 20px;
+}
+
+/* Choice buttons horizontal */
+.dialog-actions.two-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.dialog-actions.two-buttons button {
+  flex: 1;
+}

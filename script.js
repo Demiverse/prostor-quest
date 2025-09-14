@@ -1,12 +1,12 @@
-// Clean rebuilt script.js — preserves game logic, achievements, inventory, settings, modal
-/* Global state */
+// script.js final2 with requested changes
+
 let progress = 0;
 let collected = {};
 let currentAspect = null;
 let musicPlaying = false;
 let animationsEnabled = true;
+let previousScreen = 'intro';
 
-/* Helper: safe get element */
 function $id(id){ return document.getElementById(id); }
 
 /* Loader */
@@ -20,14 +20,19 @@ let loader = setInterval(() => {
   }
 }, 200);
 
-/* Screen management */
+/* Screen management with history */
 function showScreen(id){
+  if(id !== 'achievements' && id !== 'inventory' && id !== 'item-modal'){
+    previousScreen = id;
+  }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = $id(id);
   if(el) el.classList.add('active');
-  if(id === 'map') {
-    setTimeout(positionPlanets, 50);
-  }
+  if(id === 'map'){ setTimeout(positionPlanets, 50); }
+}
+
+function goBack(){
+  showScreen(previousScreen);
 }
 
 /* Typing text */
@@ -42,7 +47,6 @@ function typeText(elementId, text, speed = 40){
     i++;
     if(i >= text.length){
       clearInterval(interval);
-      el.onclick = null;
     }
   }, speed);
 }
@@ -71,7 +75,7 @@ function startJourney(){
   }
 }
 
-/* Aspects data */
+/* Aspects */
 const aspects = {
   form: {title: 'Аспект Формы',task: 'Какая фигура считается совершенной в геометрии?',puzzle: `<input type="text" id="answer" placeholder="Твой ответ">`,answer: 'круг'},
   sound: {title: 'Аспект Звука',task: 'Что из этого — не музыкальный жанр?',puzzle: `<select id="answer"><option>Рок</option><option>Джаз</option><option>Импрессионизм</option><option>Хип-хоп</option></select>`,answer: 'Импрессионизм'},
@@ -80,7 +84,6 @@ const aspects = {
   will: {title: 'Аспект Воли',task: 'Что важнее всего для завершения любого проекта?',puzzle: `<select id="answer"><option>Идея</option><option>Воля</option><option>Инструменты</option></select>`,answer: 'Воля'}
 };
 
-/* Enter aspect screen */
 function enterAspect(aspect){
   currentAspect = aspect;
   showScreen('aspect');
@@ -94,21 +97,14 @@ function enterAspect(aspect){
   if(submit){
     submit.onclick = () => {
       const ansEl = $id('answer');
-      if(!ansEl){
-        showError('Нет поля ответа');
-        return;
-      }
+      if(!ansEl){ showError('Нет поля ответа'); return; }
       let val = (ansEl.value || '').toString().trim();
-      if(val.toLowerCase() === a.answer.toLowerCase()){
-        completeAspect();
-      } else {
-        showError('Ответ неверный. Попробуй снова!');
-      }
+      if(val.toLowerCase() === a.answer.toLowerCase()){ completeAspect(); }
+      else { showError('Ответ неверный. Попробуй снова!'); }
     };
   }
 }
 
-/* Errors */
 function showError(msg){
   const err = $id('aspect-error');
   if(!err) return;
@@ -117,7 +113,6 @@ function showError(msg){
   setTimeout(()=>{ err.style.display = 'none'; }, 2000);
 }
 
-/* Complete aspect */
 function completeAspect(){
   if(!currentAspect) return;
   collected[currentAspect] = true;
@@ -126,9 +121,7 @@ function completeAspect(){
   updateAchievements();
   updateInventory();
   showScreen('map');
-  if(Object.keys(collected).length === 5){
-    showScreen('final');
-  }
+  if(Object.keys(collected).length === 5){ showScreen('final'); }
 }
 
 /* Ending */
@@ -143,7 +136,7 @@ function ending(choice){
   }
 }
 
-/* Position planets (same logic as before) */
+/* Planets positioning */
 function positionPlanets(){
   const map = document.querySelector('.map');
   if(!map) return;
@@ -178,67 +171,25 @@ function positionPlanets(){
     planet.style.animationDelay = (i*0.5) + 's';
   });
 }
-
-/* Responsive */
 let resizeTimer;
-window.addEventListener('resize', ()=>{
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(()=>{ positionPlanets(); }, 250);
-});
-window.addEventListener('load', ()=>{
-  positionPlanets();
-  setTimeout(positionPlanets,100);
-});
+window.addEventListener('resize', ()=>{ clearTimeout(resizeTimer); resizeTimer=setTimeout(()=>{positionPlanets();},250); });
+window.addEventListener('load', ()=>{ positionPlanets(); setTimeout(positionPlanets,100); });
 
-/* VK Mini Apps detection */
+/* DOMContentLoaded setup */
 document.addEventListener('DOMContentLoaded', ()=>{
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  if(isMobile) document.body.classList.add('mobile'); else document.body.classList.add('desktop');
-
-  // Top controls (achievements, settings, music)
   const top = document.createElement('div');
   top.id = 'top-controls';
   top.innerHTML = `
     <button id="ach-btn" title="Достижения">🏅</button>
-    <button id="settings-btn" title="Настройки">⚙️</button>
+    <button id="inv-btn" title="Инвентарь">🎒</button>
+    <button id="reset-btn" title="Сброс">↩️</button>
     <button id="music-toggle" title="Музыка">🔇</button>
   `;
   document.body.appendChild(top);
   $id('music-toggle').addEventListener('click', toggleMusic);
   $id('ach-btn').addEventListener('click', ()=>{ updateAchievements(); showScreen('achievements'); });
-  $id('settings-btn').addEventListener('click', ()=>{ showScreen('settings'); updateSettingsUI(); });
-
-  // Add dialog headers and backpack icon to each dialog-box
-  document.querySelectorAll('.dialog-box').forEach(box => {
-    // header badge
-    const header = document.createElement('div');
-    header.className = 'dialog-header';
-    header.textContent = 'Хранитель Простора';
-    box.appendChild(header);
-    // inventory icon
-    const inv = document.createElement('div');
-    inv.className = 'dialog-inventory';
-    inv.textContent = '🎒';
-    inv.onclick = ()=>{ updateInventory(); showScreen('inventory'); };
-    box.appendChild(inv);
-    // move dialog button area to the right inside dialog
-    const actions = box.querySelector('.dialog-actions');
-    if(actions){
-      actions.style.justifyContent = 'flex-end';
-    }
-  });
-
-  // Setup settings toggles
-  $id('toggle-music').addEventListener('change', (e)=>{
-    if(e.target.checked){ if(!musicPlaying){ toggleMusic(); } }
-    else { if(musicPlaying){ toggleMusic(); } }
-  });
-  $id('toggle-animations').addEventListener('change', (e)=>{
-    animationsEnabled = e.target.checked;
-    document.body.classList.toggle('no-animations', !animationsEnabled);
-  });
-
-  // music initial state
+  $id('inv-btn').addEventListener('click', ()=>{ updateInventory(); showScreen('inventory'); });
+  $id('reset-btn').addEventListener('click', resetProgress);
   updateMusicButton();
 });
 
@@ -256,21 +207,21 @@ function updateAchievements(){
   list.innerHTML = '';
   for(let key in achievements){
     const li = document.createElement('li');
-    li.innerHTML = `<strong>${achievements[key]}</strong> - ${collected[key] ? '<span>Получено ✅</span>' : '<span>Не получено</span>'}`;
+    li.className = collected[key] ? 'ach-done' : 'ach-undone';
+    li.innerHTML = `<span class="ach-icon">${inventoryItems[key].icon}</span> <strong>${achievements[key]}</strong> ${collected[key] ? '✅' : '❌'}`;
     list.appendChild(li);
   }
 }
 
 /* Inventory items */
 const inventoryItems = {
-  form: { icon: "🔷", name: "Артефакт Формы", desc: "Символ совершенства и идеальной гармонии." },
-  sound: { icon: "🎵", name: "Артефакт Звука", desc: "Символ музыки и вибраций, объединяющих всё." },
-  narrative: { icon: "📜", name: "Артефакт Нарратива", desc: "Символ историй, связывающих миры." },
-  vision: { icon: "👁️", name: "Артефакт Видения", desc: "Символ прозрения и ясности." },
-  will: { icon: "🔥", name: "Артефакт Воли", desc: "Символ силы, которая ведёт вперёд." }
+  form: { icon: "🔷", name: "Артефакт Формы", desc: "Символ совершенства и гармонии." },
+  sound: { icon: "🎵", name: "Артефакт Звука", desc: "Символ музыки и вибраций." },
+  narrative: { icon: "📜", name: "Артефакт Нарратива", desc: "Символ историй." },
+  vision: { icon: "👁️", name: "Артефакт Видения", desc: "Символ прозрения." },
+  will: { icon: "🔥", name: "Артефакт Воли", desc: "Символ силы." }
 };
 
-/* Update inventory list (clickable items) */
 function updateInventory(){
   const list = $id('inventory-list');
   if(!list) return;
@@ -306,7 +257,7 @@ function resetProgress(){
   showScreen('intro');
 }
 
-/* Expose some functions to window for inline HTML buttons */
+/* Expose */
 window.startJourney = startJourney;
 window.showScreen = showScreen;
 window.enterAspect = enterAspect;
@@ -314,5 +265,4 @@ window.ending = ending;
 window.resetProgress = resetProgress;
 window.closeItemModal = closeItemModal;
 window.toggleMusic = toggleMusic;
-
-// End of script
+window.goBack = goBack;
