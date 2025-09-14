@@ -27,19 +27,21 @@ function initVK() {
     });
 }
 
-// Loader
+// Loader with 8s minimum
 function startLoader() {
+  const startTime = Date.now();
   const loader = setInterval(() => {
-    progress += 10;
+    progress += 5;
     const p = $id('progress');
     if (p) p.innerText = progress + '%';
     if (progress >= 100) {
       clearInterval(loader);
-      // Ensure at least 3s visible
+      const elapsed = Date.now() - startTime;
+      const remaining = Math.max(0, 8000 - elapsed); // at least 8s
       setTimeout(async ()=>{
         await initVK();
         showScreen('intro');
-      }, 1500);
+      }, remaining);
     }
   }, 300);
 }
@@ -67,6 +69,7 @@ function createStars(count = 100) {
 
 // Screen management with history
 function showScreen(id){
+  // only push real screens into history
   if(id !== 'achievements' && id !== 'inventory' && id !== 'item-modal') {
     screenHistory.push(id);
   }
@@ -141,7 +144,6 @@ function updateMusicButton(){
 
 // Start journey
 function startJourney(){
-  // launch music automatically on first journey start
   if(!musicPlaying) toggleMusic(true);
   showScreen('dialog');
   typeText('dialog-text', "Я — Хранитель Простора. Пять Аспектов ждут тебя. Лишь собрав их вместе, ты сможешь зажечь Источник и противостоять Критику.");
@@ -249,11 +251,13 @@ function positionPlanets(){
   const centerX = mapWidth/2;
   const centerY = mapHeight/2;
   
+  const distanceFactor = 1.3; // planets further away from center
+  
   planets.forEach((planet, i) => {
     const angle = (2*Math.PI/numPlanets) * i;
     const planetW = planet.offsetWidth || 60;
-    const radiusX = Math.max(0, safeWidth/2 - planetW);
-    const radiusY = Math.max(0, safeHeight/2 - planetW);
+    const radiusX = Math.max(0, (safeWidth/2 - planetW) * distanceFactor);
+    const radiusY = Math.max(0, (safeHeight/2 - planetW) * distanceFactor);
     const x = Math.cos(angle)*radiusX + centerX - planetW/2;
     const y = Math.sin(angle)*radiusY + centerY - planetW/2;
     planet.dataset.finalLeft = Math.max(padding, Math.min(x, mapWidth - planetW - padding));
