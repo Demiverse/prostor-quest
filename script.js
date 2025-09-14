@@ -1,3 +1,4 @@
+
 // Game state
 let progress = 0;
 let collected = {};
@@ -67,26 +68,48 @@ function createStars(count = 100) {
   starsCreated = true;
 }
 
+// utility: screens considered overlays/modals (shouldn't be pushed to main history)
+const OVERLAY_SCREENS = ['achievements','inventory','item-modal'];
+
 // Screen management with history
 function showScreen(id){
-  // only push real screens into history
-  if(id !== 'achievements' && id !== 'inventory' && id !== 'item-modal') {
+  // don't re-push same screen into history; don't push overlays
+  const last = screenHistory[screenHistory.length - 1];
+  if(id !== last && !OVERLAY_SCREENS.includes(id)) {
     screenHistory.push(id);
   }
+
+  // If we're opening an overlay, keep it "on top" visually without clearing history entry.
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = $id(id);
   if(el) el.classList.add('active');
-  
+
   if(id === 'map' && !planetsPositioned){ 
     positionPlanets(); 
     planetsPositioned = true;
   }
 }
 
+// goBack: if currently showing an overlay, just close it (return to last real screen).
 function goBack(){
+  // If an overlay is visible (it's active in DOM but not in history as top), find it and close it.
+  // We treat overlays as screens that should hide and reveal the previous main screen.
+  const activeOverlay = OVERLAY_SCREENS.find(k => {
+    const el = $id(k);
+    return el && el.classList.contains('active');
+  });
+  if (activeOverlay) {
+    // reveal the last main screen from history without popping it
+    const lastMain = screenHistory[screenHistory.length - 1] || 'intro';
+    showScreen(lastMain);
+    return;
+  }
+
+  // Normal back navigation through history
   if(screenHistory.length > 1) {
+    // pop current
     screenHistory.pop();
-    const prevScreen = screenHistory[screenHistory.length - 1];
+    const prevScreen = screenHistory[screenHistory.length - 1] || 'intro';
     showScreen(prevScreen);
   } else {
     showScreen('intro');
@@ -122,7 +145,7 @@ function toggleMusic(forcePlay){
     music.loop = true;
     music.preload = 'auto';
   }
-  
+
   if(forcePlay === true){
     music.play().catch(()=>{});
     musicPlaying = true;
@@ -229,9 +252,9 @@ function shareResult() {
   if (typeof vkBridge !== 'undefined') {
     const aspectCount = Object.keys(collected).length;
     const message = aspectCount === 5 ? 
-      'Я собрал все 5 Аспектов и стал Хранителем целого в игре "Сингулярность Простора"! ✨' :
-      `Я собрал ${aspectCount} из 5 Аспектов в игре "Сингулярность Простора"!`;
-    
+      'Я собрал все 5 Аспектов и стал Хранителем целого в игре \"Сингулярность Простора\"! ✨' :
+      `Я собрал ${aspectCount} из 5 Аспектов в игре \"Сингулярность Простора\"!`;
+
     vkBridge.send('VKWebAppShowWallPostBox', { message }).catch(console.error);
   }
 }
@@ -243,16 +266,16 @@ function positionPlanets(){
   const planets = Array.from(map.querySelectorAll('.planet'));
   const mapWidth = map.clientWidth;
   const mapHeight = map.clientHeight;
-  
+
   const padding = 30;
   const safeWidth = mapWidth - padding*2;
   const safeHeight = mapHeight - padding*2;
   const numPlanets = planets.length;
   const centerX = mapWidth/2;
   const centerY = mapHeight/2;
-  
+
   const distanceFactor = 1.3; // planets further away from center
-  
+
   planets.forEach((planet, i) => {
     const angle = (2*Math.PI/numPlanets) * i;
     const planetW = planet.offsetWidth || 60;
@@ -263,7 +286,7 @@ function positionPlanets(){
     planet.dataset.finalLeft = Math.max(padding, Math.min(x, mapWidth - planetW - padding));
     planet.dataset.finalTop = Math.max(padding, Math.min(y, mapHeight - planetW - padding));
   });
-  
+
   if(!firstLaunchPlayed){
     planets.forEach((planet) => {
       planet.classList.add('no-float');
@@ -274,7 +297,7 @@ function positionPlanets(){
       planet.style.opacity = 0;
       planet.style.transform = 'scale(0.6)';
     });
-    
+
     setTimeout(()=> {
       planets.forEach((planet, i) => {
         const delay = i * 140;
@@ -287,7 +310,7 @@ function positionPlanets(){
         }, delay);
       });
     }, 80);
-    
+
     const totalTime = 80 + planets.length*140 + 900;
     setTimeout(()=> {
       planets.forEach((planet) => {
@@ -383,7 +406,7 @@ function resetProgress(){
 document.addEventListener('DOMContentLoaded', ()=>{
   createStars();
   startLoader();
-  
+
   // Controls
   const top = document.createElement('div');
   top.id = 'top-controls';
@@ -394,7 +417,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     <button id="reset-btn" title="Сброс">↩️</button>
   `;
   document.body.appendChild(top);
-  
+
   $id('music-btn').addEventListener('click', ()=>toggleMusic());
   $id('ach-btn').addEventListener('click', ()=>{ updateAchievements(); showScreen('achievements'); });
   $id('inv-btn').addEventListener('click', ()=>{ updateInventory(); showScreen('inventory'); });
