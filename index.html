@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -6,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Сингулярность Простора</title>
   <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <div id="stars"></div>
@@ -18,26 +16,27 @@
 
   <div id="intro" class="screen">
     <h1>Сингулярность Простора</h1>
+    <p>Давно, на заре цифровой эры, существовало единое целое — первозданный источник творчества. Он был непостижим и мощен.</p>
     <button class="btn" onclick="startJourney()">Отправиться в путешествие</button>
   </div>
 
   <div id="dialog" class="screen">
     <div class="dialog-box">
       <div class="dialog-header">Хранитель Простора</div>
-      <p id="dialog-text"></p>
+      <p id="dialog-text" class="dialog-text"></p>
     </div>
     <button class="btn" onclick="showScreen('map')">Продолжить</button>
   </div>
 
   <div id="map" class="screen">
     <h2>Созвездие Аспектов</h2>
-    <div class="map">
-      <div id="prostor" class="planet center" onclick="window.open('https://vk.com/prostor','_blank')">Простор</div>
-      <div id="form" class="planet aspect-btn" onclick="enterAspect('form')">Форма</div>
-      <div id="sound" class="planet aspect-btn" onclick="enterAspect('sound')">Звук</div>
-      <div id="narrative" class="planet aspect-btn" onclick="enterAspect('narrative')">Нарратив</div>
-      <div id="vision" class="planet aspect-btn" onclick="enterAspect('vision')">Видение</div>
-      <div id="will" class="planet aspect-btn" onclick="enterAspect('will')">Воля</div>
+    <div class="map-container">
+      <div class="center-planet" onclick="window.open('https://vk.com/prostor','_blank')">Простор</div>
+      <div id="form" class="planet" onclick="enterAspect('form')">Форма</div>
+      <div id="sound" class="planet" onclick="enterAspect('sound')">Звук</div>
+      <div id="narrative" class="planet" onclick="enterAspect('narrative')">Нарратив</div>
+      <div id="vision" class="planet" onclick="enterAspect('vision')">Видение</div>
+      <div id="will" class="planet" onclick="enterAspect('will')">Воля</div>
     </div>
   </div>
 
@@ -45,7 +44,7 @@
     <h2 id="aspect-title"></h2>
     <p id="aspect-task"></p>
     <div id="aspect-puzzle"></div>
-    <p id="aspect-error" style="color:#ff8080; font-weight:bold; display:none;"></p>
+    <p id="aspect-error"></p>
     <button class="btn" id="aspect-submit">Проверить</button>
   </div>
 
@@ -72,29 +71,6 @@
     <button class="btn" onclick="resetProgress()">Начать заново</button>
   </div>
 
-  <!-- Музыка -->
-  <audio id="bg-music" loop>
-    <source src="StockTune-Echoes Of The Cosmos_1757438077.mp3" type="audio/mpeg">
-  </audio>
-
-  <!-- vkBridge -->
-  <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
-  <script>vkBridge.send('VKWebAppInit');</script>
-
-  <!-- particles.js -->
-  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-  <script>
-    particlesJS('stars', {
-      "particles": {
-        "number": {"value": 120},
-        "size": {"value": 2},
-        "move": {"speed": 0.5},
-        "line_linked": {"enable": false},
-        "color": {"value": "#ffffff"}
-      }
-    });
-  </script>
-
   <div id="achievements" class="screen">
     <h2>Достижения</h2>
     <ul id="achievements-list"></ul>
@@ -107,7 +83,7 @@
     <button class="btn" onclick="goBack()">Назад</button>
   </div>
 
-  <div id="item-modal" class="screen" style="background: rgba(0,0,0,0.7);">
+  <div id="item-modal" class="screen">
     <div class="dialog-box" style="max-width:500px; margin:auto;">
       <h3 id="item-title"></h3>
       <p id="item-desc"></p>
@@ -117,6 +93,7 @@
     </div>
   </div>
 
-  <script src="script.js?v=7"></script>
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

@@ -1,14 +1,15 @@
-// script.js
+// Game state
 let progress = 0;
 let collected = {};
 let currentAspect = null;
 let musicPlaying = false;
-let previousScreen = 'intro';
 let screenHistory = ['intro'];
+let planetsPositioned = false;
 
+// DOM helper
 function $id(id){ return document.getElementById(id); }
 
-/* Loader */
+// Loader
 let loader = setInterval(() => {
   progress += 10;
   const p = $id('progress');
@@ -16,19 +17,77 @@ let loader = setInterval(() => {
   if (progress >= 100) {
     clearInterval(loader);
     showScreen('intro');
+    initParticles();
   }
 }, 200);
 
-/* Screen management with history */
+// Initialize particles
+function initParticles() {
+  particlesJS('stars', {
+    "particles": {
+      "number": {
+        "value": 120,
+        "density": {
+          "enable": true,
+          "value_area": 800
+        }
+      },
+      "color": {
+        "value": "#ffffff"
+      },
+      "shape": {
+        "type": "circle"
+      },
+      "opacity": {
+        "value": 0.5,
+        "random": true
+      },
+      "size": {
+        "value": 2,
+        "random": true
+      },
+      "line_linked": {
+        "enable": false
+      },
+      "move": {
+        "enable": true,
+        "speed": 0.5,
+        "direction": "none",
+        "random": true,
+        "straight": false,
+        "out_mode": "out",
+        "bounce": false
+      }
+    },
+    "interactivity": {
+      "detect_on": "canvas",
+      "events": {
+        "onhover": {
+          "enable": false
+        },
+        "onclick": {
+          "enable": false
+        },
+        "resize": true
+      }
+    },
+    "retina_detect": true
+  });
+}
+
+// Screen management with history
 function showScreen(id){
-  if(id !== 'achievements' && id !== 'inventory' && id !== 'item-modal'){
-    previousScreen = id;
+  if(id !== 'achievements' && id !== 'inventory' && id !== 'item-modal') {
     screenHistory.push(id);
   }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = $id(id);
   if(el) el.classList.add('active');
-  if(id === 'map'){ setTimeout(positionPlanets, 50); }
+  
+  if(id === 'map' && !planetsPositioned){ 
+    positionPlanets(); 
+    planetsPositioned = true;
+  }
 }
 
 function goBack(){
@@ -41,7 +100,7 @@ function goBack(){
   }
 }
 
-/* Typing text with skip */
+// Typing text with skip
 function typeText(elementId, text, speed = 40){
   const el = $id(elementId);
   if(!el) return;
@@ -60,16 +119,11 @@ function typeText(elementId, text, speed = 40){
   };
 }
 
-/* Music */
-const music = document.getElementById("bg-music");
-function updateMusicButton(){
-  const btn = $id('music-toggle');
-  if(!btn) return;
-  btn.textContent = musicPlaying ? "🔊" : "🔇";
-}
+// Music
+const music = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_5b735d9f7f.mp3?filename=ambient-piano-amp-strings-120799.mp3');
+music.loop = true;
 
 function toggleMusic(){
-  if(!music) return;
   if(musicPlaying){ 
     music.pause(); 
   } else { 
@@ -79,19 +133,19 @@ function toggleMusic(){
   updateMusicButton();
 }
 
-/* Start journey */
+function updateMusicButton(){
+  const btn = $id('music-btn');
+  if(!btn) return;
+  btn.textContent = musicPlaying ? "🔊" : "🔇";
+}
+
+// Start journey
 function startJourney(){
   showScreen('dialog');
   typeText('dialog-text', "Я — Хранитель Простора. Пять Аспектов ждут тебя. Лишь собрав их вместе, ты сможешь зажечь Источник и противостоять Критику.");
-  if(!musicPlaying && music){
-    music.play().then(()=>{ 
-      musicPlaying = true; 
-      updateMusicButton(); 
-    }).catch(()=>{});
-  }
 }
 
-/* Aspects */
+// Aspects
 const aspects = {
   form: {title: 'Аспект Формы',task: 'Какая фигура считается совершенной в геометрии?',puzzle: `<input type="text" id="answer" placeholder="Твой ответ">`,answer: 'круг'},
   sound: {title: 'Аспект Звука',task: 'Что из этого — не музыкальный жанр?',puzzle: `<select id="answer"><option>Рок</option><option>Джаз</option><option>Импрессионизм</option><option>Хип-хоп</option></select>`,answer: 'Импрессионизм'},
@@ -108,7 +162,7 @@ function enterAspect(aspect){
   $id('aspect-title').innerText = a.title;
   $id('aspect-task').innerText = a.task;
   $id('aspect-puzzle').innerHTML = a.puzzle;
-  $id('aspect-error').style.display = 'none';
+  $id('aspect-error').innerText = '';
   const submit = $id('aspect-submit');
   if(submit){
     submit.onclick = () => {
@@ -125,8 +179,7 @@ function showError(msg){
   const err = $id('aspect-error');
   if(!err) return;
   err.innerText = msg;
-  err.style.display = 'block';
-  setTimeout(()=>{ err.style.display = 'none'; }, 2000);
+  setTimeout(()=>{ err.innerText = ''; }, 2000);
 }
 
 function completeAspect(){
@@ -140,7 +193,7 @@ function completeAspect(){
   if(Object.keys(collected).length === 5){ showScreen('final'); }
 }
 
-/* Ending */
+// Ending
 function ending(choice){
   showScreen('ending');
   if(choice === 'chaos'){
@@ -152,18 +205,14 @@ function ending(choice){
   }
 }
 
-/* Planets positioning */
+// Planets positioning
 function positionPlanets(){
-  const map = document.querySelector('.map');
+  const map = document.querySelector('.map-container');
   if(!map) return;
-  const planets = map.querySelectorAll('.aspect-btn');
-  const center = map.querySelector('.center');
+  const planets = map.querySelectorAll('.planet');
   const mapWidth = map.offsetWidth;
   const mapHeight = map.offsetHeight;
-  if(center){
-    center.style.left = (mapWidth - center.offsetWidth) / 2 + 'px';
-    center.style.top = (mapHeight - center.offsetHeight) / 2 + 'px';
-  }
+  
   const padding = 40;
   const safeWidth = mapWidth - padding*2;
   const safeHeight = mapHeight - padding*2;
@@ -173,7 +222,8 @@ function positionPlanets(){
   const maxPlanetW = Math.max(...Array.from(planets).map(p => p.offsetWidth || 70));
   const maxRadiusX = Math.max(0, safeWidth/2 - maxPlanetW);
   const maxRadiusY = Math.max(0, safeHeight/2 - maxPlanetW);
-  planets.forEach((planet,i) => {
+  
+  planets.forEach((planet, i) => {
     const angle = (2*Math.PI/numPlanets) * i;
     const radiusRatio = 0.7 + (0.3*(i/numPlanets));
     const radiusX = maxRadiusX * radiusRatio;
@@ -182,40 +232,19 @@ function positionPlanets(){
     const y = Math.sin(angle)*radiusY + centerY - planet.offsetHeight/2;
     const finalX = Math.max(padding, Math.min(x, mapWidth - planet.offsetWidth - padding));
     const finalY = Math.max(padding, Math.min(y, mapHeight - planet.offsetHeight - padding));
+    
     planet.style.left = finalX + 'px';
     planet.style.top = finalY + 'px';
-    planet.style.animationDelay = (i*0.5) + 's';
   });
 }
-let resizeTimer;
-window.addEventListener('resize', ()=>{ clearTimeout(resizeTimer); resizeTimer=setTimeout(()=>{positionPlanets();},250); });
-window.addEventListener('load', ()=>{ positionPlanets(); setTimeout(positionPlanets,100); });
 
-/* DOMContentLoaded setup */
-document.addEventListener('DOMContentLoaded', ()=>{
-  const top = document.createElement('div');
-  top.id = 'top-controls';
-  top.innerHTML = `
-    <button id="ach-btn" title="Достижения">🏅</button>
-    <button id="inv-btn" title="Инвентарь">🎒</button>
-    <button id="reset-btn" title="Сброс">↩️</button>
-    <button id="music-toggle" title="Музыка">🔇</button>
-  `;
-  document.body.appendChild(top);
-  $id('music-toggle').addEventListener('click', toggleMusic);
-  $id('ach-btn').addEventListener('click', ()=>{ updateAchievements(); showScreen('achievements'); });
-  $id('inv-btn').addEventListener('click', ()=>{ updateInventory(); showScreen('inventory'); });
-  $id('reset-btn').addEventListener('click', resetProgress);
-  updateMusicButton();
-});
-
-/* Achievements */
+// Achievements
 const achievements = {
-  form: "Покоритель Формы",
-  sound: "Мастер Звука",
-  narrative: "Сказитель",
-  vision: "Провидец",
-  will: "Несгибаемая Воля"
+  form: {icon: "🔷", name: "Покоритель Формы"},
+  sound: {icon: "🎵", name: "Мастер Звука"},
+  narrative: {icon: "📜", name: "Сказитель"},
+  vision: {icon: "👁️", name: "Провидец"},
+  will: {icon: "🔥", name: "Несгибаемая Воля"}
 };
 
 function updateAchievements(){
@@ -223,20 +252,19 @@ function updateAchievements(){
   if(!list) return;
   list.innerHTML = '';
   for(let key in achievements){
+    const ach = achievements[key];
     const li = document.createElement('li');
-    li.className = collected[key] ? 'ach-done' : 'ach-undone';
+    li.className = collected[key] ? 'ach-item done' : 'ach-item undone';
     li.innerHTML = `
-      <span class="ach-icon">${inventoryItems[key].icon}</span> 
-      <div class="ach-content">
-        <strong>${achievements[key]}</strong>
-        <span class="ach-status">${collected[key] ? '✅ Получено' : '❌ Не получено'}</span>
-      </div>
+      <span class="ach-icon">${ach.icon}</span> 
+      <strong>${ach.name}</strong> 
+      ${collected[key] ? '✅' : '❌'}
     `;
     list.appendChild(li);
   }
 }
 
-/* Inventory */
+// Inventory
 const inventoryItems = {
   form: { icon: "🔷", name: "Артефакт Формы", desc: "Символ совершенства и гармонии." },
   sound: { icon: "🎵", name: "Артефакт Звука", desc: "Символ музыки и вибраций." },
@@ -253,22 +281,21 @@ function updateInventory(){
     if(collected[key]){
       const item = inventoryItems[key];
       const li = document.createElement('li');
-      li.className = 'inventory-item';
+      li.className = 'inv-item';
       li.innerHTML = `
         <span class="item-icon">${item.icon}</span> 
-        <span class="item-name">${item.name}</span>
+        <span>${item.name}</span>
       `;
-      li.style.cursor = 'pointer';
-      li.onclick = ()=> showItemModal(item.name, item.desc);
+      li.onclick = () => showItemModal(item.name, item.desc);
       list.appendChild(li);
     }
   }
   if(list.children.length === 0) {
-    list.innerHTML = '<li style="text-align:center;color:#888;">Инвентарь пуст</li>';
+    list.innerHTML = '<li style="text-align:center;color:#888;list-style:none;">Инвентарь пуст</li>';
   }
 }
 
-/* Item modal */
+// Item modal
 function showItemModal(title, desc){
   const titleEl = $id('item-title');
   const descEl = $id('item-desc');
@@ -281,17 +308,44 @@ function closeItemModal(){
   showScreen('inventory');
 }
 
-/* Reset progress */
+// Reset progress
 function resetProgress(){
   collected = {};
-  musicPlaying = false;
-  if(music) music.pause();
+  planetsPositioned = false;
   document.querySelectorAll('.planet').forEach(p => p.classList.remove('completed'));
-  showScreen('intro');
+  updateAchievements();
+  updateInventory();
   screenHistory = ['intro'];
+  showScreen('intro');
 }
 
-/* Initialize */
-setTimeout(()=>{
-  if(progress >= 100) showScreen('intro');
-}, 3000);
+// Initialize
+document.addEventListener('DOMContentLoaded', ()=>{
+  // Create top controls
+  const top = document.createElement('div');
+  top.id = 'top-controls';
+  top.innerHTML = `
+    <button id="music-btn" title="Музыка">🔇</button>
+    <button id="ach-btn" title="Достижения">🏅</button>
+    <button id="inv-btn" title="Инвентарь">🎒</button>
+    <button id="reset-btn" title="Сброс">↩️</button>
+  `;
+  document.body.appendChild(top);
+  
+  $id('music-btn').addEventListener('click', toggleMusic);
+  $id('ach-btn').addEventListener('click', ()=>{ updateAchievements(); showScreen('achievements'); });
+  $id('inv-btn').addEventListener('click', ()=>{ updateInventory(); showScreen('inventory'); });
+  $id('reset-btn').addEventListener('click', resetProgress);
+  
+  updateMusicButton();
+});
+
+// Make functions global
+window.startJourney = startJourney;
+window.showScreen = showScreen;
+window.enterAspect = enterAspect;
+window.ending = ending;
+window.resetProgress = resetProgress;
+window.closeItemModal = closeItemModal;
+window.toggleMusic = toggleMusic;
+window.goBack = goBack;
