@@ -1,6 +1,15 @@
+/* Fonts */
+@font-face {
+  font-family: 'VKSans';
+  src: url('vksans.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+  font-family: 'VKSans', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
   background-color: #000;
   color: #fff;
   min-height: 100vh;
@@ -19,7 +28,7 @@ body {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  z-index: -1;
+  z-index: 0; /* behind content but above page background */
   background: radial-gradient(ellipse at center, #0a0e2a 0%, #000000 70%);
 }
 
@@ -45,6 +54,8 @@ body {
   padding: 20px;
   text-align: center;
   box-sizing: border-box;
+  position: relative;
+  z-index: 1; /* above stars */
 }
 
 .screen.active { display: flex; }
@@ -53,10 +64,9 @@ body {
 h1 {
   font-size: 2.2rem;
   margin-bottom: 1.5rem;
-  background: linear-gradient(45deg, #0077FF, #FF1A86);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 20px rgba(255, 26, 134, 0.3);
+  color: #ffffff; /* changed to plain white as requested */
+  -webkit-text-fill-color: initial;
+  text-shadow: 0 0 8px rgba(0,0,0,0.6);
 }
 
 h2 {
@@ -78,7 +88,7 @@ p {
 
 /* Buttons */
 .btn {
-  background: linear-gradient(45deg, #0077FF, #FF1A86);
+  background: #0077FF; /* solid requested color */
   border: none;
   border-radius: 10px;
   padding: 14px 24px;
@@ -87,13 +97,13 @@ p {
   font-size: 16px;
   cursor: pointer;
   margin: 10px;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 119, 255, 0.3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0, 119, 255, 0.25);
 }
 
 .btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255, 26, 134, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 119, 255, 0.35);
 }
 
 .btn:active {
@@ -102,14 +112,19 @@ p {
 
 /* Dialog box */
 .dialog-box {
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(0, 0, 0, 0.85);
   border-radius: 12px;
-  padding: 20px;
-  max-width: 90%;
+  padding: 22px;
+  min-width: 260px;
+  max-width: 92%;
   margin: 15px auto;
   text-align: left;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   position: relative;
+  min-height: 140px; /* pre-expanded so text won't expand it */
+  max-height: 260px;
+  overflow-y: auto; /* if text is long, scroll inside box */
+  box-sizing: border-box;
 }
 
 .dialog-header {
@@ -117,9 +132,11 @@ p {
   font-weight: bold;
   font-size: 16px;
   margin-bottom: 12px;
-  text-align: center;
+  text-align: left; /* moved to left corner as requested */
+  margin-left: 6px;
 }
 
+/* make the dialog text area stable */
 .dialog-text {
   min-height: 60px;
   line-height: 1.5;
@@ -148,15 +165,15 @@ p {
 
 .planet {
   position: absolute;
-  width: 60px;
-  height: 60px;
+  width: 76px; /* increased size */
+  height: 76px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 14px;
   transition: all 0.3s ease;
   background: radial-gradient(circle at 30% 30%, #2c2c54, #000);
   box-shadow: 0 0 12px rgba(0, 119, 255, 0.5);
@@ -164,28 +181,33 @@ p {
   text-shadow: 0 0 4px black;
   animation: float 6s ease-in-out infinite;
   user-select: none;
+  opacity: 1;
+}
+
+.planet.no-float {
+  animation: none !important;
 }
 
 .planet:hover {
-  transform: scale(1.08);
-  box-shadow: 0 0 16px rgba(255, 26, 134, 0.8);
+  transform: scale(1.06);
+  box-shadow: 0 0 18px rgba(255, 26, 134, 0.8);
 }
 
 .planet.completed {
   background: radial-gradient(circle at 30% 30%, #0077FF, #0044aa);
-  box-shadow: 0 0 16px rgba(0, 119, 255, 0.8);
+  box-shadow: 0 0 18px rgba(0, 119, 255, 0.8);
 }
 
 .center-planet {
   position: absolute;
-  width: 80px;
-  height: 80px;
+  width: 100px; /* slightly larger center */
+  height: 100px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   background: radial-gradient(circle at 30% 30%, #FF1A86, #aa1159);
-  box-shadow: 0 0 24px rgba(255, 26, 134, 0.7);
+  box-shadow: 0 0 28px rgba(255, 26, 134, 0.7);
   color: white;
   font-weight: bold;
   font-size: 14px;
@@ -332,39 +354,40 @@ p {
 @media (max-width: 768px) {
   h1 { font-size: 1.8rem; }
   h2 { font-size: 1.4rem; }
-  
+
   .map-container {
     height: 50vh;
   }
-  
+
   .planet {
-    width: 50px;
-    height: 50px;
-    font-size: 11px;
-  }
-  
-  .center-planet {
-    width: 65px;
-    height: 65px;
+    width: 64px;
+    height: 64px;
     font-size: 12px;
   }
-  
+
+  .center-planet {
+    width: 82px;
+    height: 82px;
+    font-size: 12px;
+  }
+
   .dialog-box {
     padding: 15px;
     max-width: 95%;
+    min-height: 120px;
   }
-  
+
   .btn {
     padding: 12px 20px;
     font-size: 15px;
     margin: 8px;
   }
-  
+
   #top-controls {
     top: 5px;
     right: 5px;
   }
-  
+
   #top-controls button {
     width: 32px;
     height: 32px;
@@ -375,24 +398,24 @@ p {
 @media (max-width: 480px) {
   h1 { font-size: 1.6rem; }
   h2 { font-size: 1.3rem; }
-  
+
   .planet {
-    width: 45px;
-    height: 45px;
+    width: 56px;
+    height: 56px;
     font-size: 10px;
   }
-  
+
   .center-planet {
-    width: 60px;
-    height: 60px;
+    width: 72px;
+    height: 72px;
     font-size: 11px;
   }
-  
+
   .dialog-actions.two-buttons {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .dialog-actions.two-buttons .btn {
     width: 100%;
     max-width: 250px;

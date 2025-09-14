@@ -5,14 +5,31 @@ let currentAspect = null;
 let musicPlaying = false;
 let screenHistory = ['intro'];
 let planetsPositioned = false;
+let firstLaunchPlayed = false;
 
 // DOM helper
 function $id(id){ return document.getElementById(id); }
 
 // Initialize VK Bridge
 function initVK() {
+  if (typeof vkBridge === 'undefined') return;
   vkBridge.send('VKWebAppInit', {})
-    .then(data => console.log('VK init success', data))
+    .then(data => {
+      console.log('VK init success', data);
+      // Try to (re)create stars after VK init so background isn't lost
+      try { createStars(); } catch (e) {}
+      // subscribe to bridge events - recreate stars on config/visibility changes
+      try {
+        vkBridge.subscribe((e) => {
+          if(!e) return;
+          // For many events it's safe to refresh visual background
+          createStars();
+          updateVKViewport();
+        });
+      } catch(e) {
+        console.warn('vkBridge.subscribe failed', e);
+      }
+    })
     .catch(error => console.error('VK init error', error));
 }
 
@@ -30,14 +47,18 @@ let loader = setInterval(() => {
 }, 200);
 
 // Create stars background
-function createStars() {
+function createStars(count = 100) {
   const starsContainer = $id('stars');
+  if (!starsContainer) return;
   starsContainer.innerHTML = '';
-  
-  for (let i = 0; i < 100; i++) {
+  // make sure it's visible (some wrappers in VK can change styles)
+  starsContainer.style.display = 'block';
+
+  for (let i = 0; i < count; i++) {
     const star = document.createElement('div');
     star.className = 'star';
-    star.style.width = Math.random() * 2 + 1 + 'px';
+    const size = Math.random() * 2 + 1;
+    star.style.width = size + 'px';
     star.style.height = star.style.width;
     star.style.left = Math.random() * 100 + '%';
     star.style.top = Math.random() * 100 + '%';
@@ -55,12 +76,12 @@ function showScreen(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = $id(id);
   if(el) el.classList.add('active');
-  
+
   if(id === 'map' && !planetsPositioned){ 
     positionPlanets(); 
     planetsPositioned = true;
   }
-  
+
   // Update VK view height
   updateVKViewport();
 }
@@ -109,10 +130,12 @@ let music = null;
 
 function toggleMusic(){
   if (!music) {
-    music = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_5b735d9f7f.mp3?filename=ambient-piano-amp-strings-120799.mp3');
+    // Use local file provided in project root
+    music = new Audio('StockTune-Echoes Of The Cosmos_1757438077.mp3');
     music.loop = true;
+    music.preload = 'auto';
   }
-  
+
   if(musicPlaying){ 
     music.pause(); 
   } else { 
@@ -134,13 +157,20 @@ function startJourney(){
   typeText('dialog-text', "Я — Хранитель Простора. Пять Аспектов ждут тебя. Лишь собрав их вместе, ты сможешь зажечь Источник и противостоять Критику.");
 }
 
-// Open Prostor community
+// Open Prostor community (opens vk.com/prostor)
 function openProstor() {
   if (typeof vkBridge !== 'undefined') {
-    vkBridge.send('VKWebAppShowCommunityWidgetPreviewBox', {
-      group_id: 123456, // Заменить на реальный ID группы Простор
-      type: 'text'
-    }).catch(console.error);
+    // Fallback: try opening community preview, but ensure link fallback as well
+    try {
+      vkBridge.send('VKWebAppShowCommunityWidgetPreviewBox', {
+        group_id: 1, // placeholder (if invalid, fallback below)
+        type: 'text'
+      }).catch(() => {
+        window.open('https://vk.com/prostor', '_blank');
+      });
+    } catch(e) {
+      window.open('https://vk.com/prostor', '_blank');
+    }
   } else {
     window.open('https://vk.com/prostor', '_blank');
   }
@@ -213,44 +243,88 @@ function shareResult() {
     const message = aspectCount === 5 ? 
       'Я собрал все 5 Аспектов и стал Хранителем целого в игре "Сингулярность Простора"! ✨' :
       `Я собрал ${aspectCount} из 5 Аспектов в игре "Сингулярность Простора"!`;
-    
+
     vkBridge.send('VKWebAppShowWallPostBox', {
       message: message
     }).catch(console.error);
   }
 }
 
-// Planets positioning
+// Planets positioning + first-launch animation
 function positionPlanets(){
   const map = document.querySelector('.map-container');
   if(!map) return;
-  const planets = map.querySelectorAll('.planet');
-  const mapWidth = map.offsetWidth;
-  const mapHeight = map.offsetHeight;
-  
+  const planets = Array.from(map.querySelectorAll('.planet'));
+  const mapWidth = map.clientWidth;
+  const mapHeight = map.clientHeight;
+
   const padding = 30;
   const safeWidth = mapWidth - padding*2;
   const safeHeight = mapHeight - padding*2;
   const numPlanets = planets.length;
   const centerX = mapWidth/2;
   const centerY = mapHeight/2;
-  const maxPlanetW = Math.max(...Array.from(planets).map(p => p.offsetWidth || 60));
-  const maxRadiusX = Math.max(0, safeWidth/2 - maxPlanetW);
-  const maxRadiusY = Math.max(0, safeHeight/2 - maxPlanetW);
-  
+
+  // compute final positions (ellipse-ish)
   planets.forEach((planet, i) => {
     const angle = (2*Math.PI/numPlanets) * i;
     const radiusRatio = 0.7 + (0.3*(i/numPlanets));
-    const radiusX = maxRadiusX * radiusRatio;
-    const radiusY = maxRadiusY * radiusRatio;
-    const x = Math.cos(angle)*radiusX + centerX - planet.offsetWidth/2;
-    const y = Math.sin(angle)*radiusY + centerY - planet.offsetHeight/2;
-    const finalX = Math.max(padding, Math.min(x, mapWidth - planet.offsetWidth - padding));
-    const finalY = Math.max(padding, Math.min(y, mapHeight - planet.offsetHeight - padding));
-    
-    planet.style.left = finalX + 'px';
-    planet.style.top = finalY + 'px';
+    const planetW = planet.offsetWidth || 60;
+    const radiusX = Math.max(0, safeWidth/2 - planetW);
+    const radiusY = Math.max(0, safeHeight/2 - planetW);
+    const x = Math.cos(angle)*radiusX + centerX - planetW/2;
+    const y = Math.sin(angle)*radiusY + centerY - planetW/2;
+    const finalX = Math.max(padding, Math.min(x, mapWidth - planetW - padding));
+    const finalY = Math.max(padding, Math.min(y, mapHeight - planetW - padding));
+    planet.dataset.finalLeft = finalX;
+    planet.dataset.finalTop = finalY;
   });
+
+  // If first launch not played yet, animate planets flying out from center
+  if(!firstLaunchPlayed){
+    planets.forEach((planet) => {
+      planet.classList.add('no-float');
+      // start at center
+      const startX = centerX - (planet.offsetWidth/2);
+      const startY = centerY - (planet.offsetHeight/2);
+      planet.style.left = startX + 'px';
+      planet.style.top = startY + 'px';
+      planet.style.opacity = 0;
+      planet.style.transform = 'scale(0.6)';
+    });
+
+    // slight delay to allow DOM to apply start positions
+    setTimeout(()=> {
+      planets.forEach((planet, i) => {
+        const delay = i * 140; // stagger
+        setTimeout(()=> {
+          planet.style.transition = 'left 700ms cubic-bezier(.2,.9,.3,1), top 700ms cubic-bezier(.2,.9,.3,1), transform 600ms, opacity 300ms';
+          planet.style.left = planet.dataset.finalLeft + 'px';
+          planet.style.top = planet.dataset.finalTop + 'px';
+          planet.style.opacity = 1;
+          planet.style.transform = 'scale(1)';
+        }, delay);
+      });
+    }, 80);
+
+    // after animation ends, restore floating animation and clear transitions
+    const totalTime = 80 + planets.length*140 + 900;
+    setTimeout(()=> {
+      planets.forEach((planet) => {
+        planet.classList.remove('no-float');
+        planet.style.transition = '';
+        planet.style.transform = '';
+      });
+      firstLaunchPlayed = true;
+    }, totalTime);
+  } else {
+    // simple place planets to final positions (no animation)
+    planets.forEach((planet) => {
+      planet.style.left = planet.dataset.finalLeft + 'px';
+      planet.style.top = planet.dataset.finalTop + 'px';
+      planet.style.opacity = 1;
+    });
+  }
 }
 
 // Achievements
@@ -327,12 +401,24 @@ function closeItemModal(){
 function resetProgress(){
   collected = {};
   planetsPositioned = false;
+  firstLaunchPlayed = false;
   document.querySelectorAll('.planet').forEach(p => p.classList.remove('completed'));
   updateAchievements();
   updateInventory();
   screenHistory = ['intro'];
   showScreen('intro');
 }
+
+// Ensure stars are present on visibility change
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    try { createStars(); } catch(e) {}
+  }
+});
+
+window.addEventListener('focus', () => {
+  try { createStars(); } catch(e) {}
+});
 
 // Initialize
 document.addEventListener('DOMContentLoaded', ()=>{
@@ -346,13 +432,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
     <button id="reset-btn" title="Сброс">↩️</button>
   `;
   document.body.appendChild(top);
-  
+
   $id('music-btn').addEventListener('click', toggleMusic);
   $id('ach-btn').addEventListener('click', ()=>{ updateAchievements(); showScreen('achievements'); });
   $id('inv-btn').addEventListener('click', ()=>{ updateInventory(); showScreen('inventory'); });
   $id('reset-btn').addEventListener('click', resetProgress);
-  
+
   updateMusicButton();
+
+  // Try to create stars immediately so they exist even if VK changes styles
+  try { createStars(); } catch(e) {}
 });
 
 // Make functions global
