@@ -1,7 +1,7 @@
 
 @font-face {
   font-family: 'VK Sans';
-  src: url('vksans.woff2') format('woff2');
+  src: url('vksans.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
 }

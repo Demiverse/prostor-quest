@@ -228,13 +228,15 @@ function updateAchievements() {
 }
 
 // Инвентарь
+
 const inventoryItems = {
-  form: {icon: "🔷", name: "Артефакт Формы"},
-  sound: {icon: "🎵", name: "Артефакт Звука"},
-  narrative: {icon: "📜", name: "Артефакт Нарратива"},
-  vision: {icon: "👁️", name: "Артефакт Видения"},
-  will: {icon: "🔥", name: "Артефакт Воли"}
+  form: {icon: "🔷", name: "Артефакт Формы", desc: "Символ совершенства и идеальной гармонии."},
+  sound: {icon: "🎵", name: "Артефакт Звука", desc: "Символ музыки и вибраций, объединяющих всё."},
+  narrative: {icon: "📜", name: "Артефакт Нарратива", desc: "Символ историй, связывающих миры."},
+  vision: {icon: "👁️", name: "Артефакт Видения", desc: "Символ прозрения и ясности."},
+  will: {icon: "🔥", name: "Артефакт Воли", desc: "Символ силы, которая ведёт вперёд."}
 };
+
   form: "Артефакт Формы",
   sound: "Артефакт Звука",
   narrative: "Артефакт Нарратива",
@@ -248,7 +250,13 @@ function updateInventory() {
   for (let key in collected) {
     if (collected[key]) {
       const li = document.createElement('li');
-      li.innerHTML = `<span style="font-size:20px;margin-right:8px;">${inventoryItems[key].icon}</span> ${inventoryItems[key].name} - описание заглушка`;
+      li.innerHTML = `<span style="font-size:20px;margin-right:8px;">${inventoryItems[key].icon}</span> ${inventoryItems[key].name}`;
+      li.style.cursor = "pointer";
+      li.onclick = () => showItemModal(inventoryItems[key].name, inventoryItems[key].desc);
+      list.appendChild(li);
+    }
+  }
+}</span> ${inventoryItems[key].name} - описание заглушка`;
       list.appendChild(li);
     }
   }
@@ -318,6 +326,12 @@ function updateInventory() {
     if (collected[key]) {
       const li = document.createElement('li');
       li.innerHTML = `<span style="font-size:20px;margin-right:8px;">${inventoryItems[key].icon}</span> ${inventoryItems[key].name}`;
+      li.style.cursor = "pointer";
+      li.onclick = () => showItemModal(inventoryItems[key].name, inventoryItems[key].desc);
+      list.appendChild(li);
+    }
+  }
+}</span> ${inventoryItems[key].name}`;
       li.style.cursor = "pointer";
       li.onclick = () => showItemModal(inventoryItems[key].name, "Описание этого артефакта появится позже...");
       list.appendChild(li);
