@@ -90,6 +90,38 @@
     });
   </script>
 
-  <script src="script.js?v=5"></script>
+
+  <div id="achievements" class="screen">
+    <h2>Достижения</h2>
+    <ul id="achievements-list"></ul>
+    <button class="btn" onclick="showScreen('map')">Назад</button>
+  </div>
+
+  <div id="settings" class="screen">
+    <h2>Настройки</h2>
+    <label><input type="checkbox" id="toggle-music" checked> Музыка</label><br>
+    <label><input type="checkbox" id="toggle-animations" checked> Анимации</label><br>
+    <button class="btn" onclick="resetProgress()">Сбросить прогресс</button><br>
+    <button class="btn" onclick="showScreen('map')">Назад</button>
+  </div>
+
+  <div id="inventory" class="screen">
+    <h2>Инвентарь</h2>
+    <ul id="inventory-list"></ul>
+    <button class="btn" onclick="showScreen('map')">Назад</button>
+  </div>
+
+  <script src="script.js?v=6"></script>
+
+  <div id="item-modal" class="screen" style="background: rgba(0,0,0,0.7);">
+    <div class="dialog-box" style="max-width:500px; margin:auto;">
+      <h3 id="item-title"></h3>
+      <p id="item-desc"></p>
+      <div class="dialog-actions">
+        <button class="btn" onclick="closeItemModal()">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>

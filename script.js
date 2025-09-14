@@ -207,3 +207,120 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(positionPlanets, 300);
   });
 });
+
+// Ачивки
+const achievements = {
+  form: "Покоритель Формы",
+  sound: "Мастер Звука",
+  narrative: "Сказитель",
+  vision: "Провидец",
+  will: "Несгибаемая Воля"
+};
+
+function updateAchievements() {
+  const list = document.getElementById('achievements-list');
+  list.innerHTML = "";
+  for (let key in achievements) {
+    const li = document.createElement('li');
+    li.textContent = achievements[key] + (collected[key] ? " ✅" : " ❌");
+    list.appendChild(li);
+  }
+}
+
+// Инвентарь
+const inventoryItems = {
+  form: {icon: "🔷", name: "Артефакт Формы"},
+  sound: {icon: "🎵", name: "Артефакт Звука"},
+  narrative: {icon: "📜", name: "Артефакт Нарратива"},
+  vision: {icon: "👁️", name: "Артефакт Видения"},
+  will: {icon: "🔥", name: "Артефакт Воли"}
+};
+  form: "Артефакт Формы",
+  sound: "Артефакт Звука",
+  narrative: "Артефакт Нарратива",
+  vision: "Артефакт Видения",
+  will: "Артефакт Воли"
+};
+
+function updateInventory() {
+  const list = document.getElementById('inventory-list');
+  list.innerHTML = "";
+  for (let key in collected) {
+    if (collected[key]) {
+      const li = document.createElement('li');
+      li.innerHTML = `<span style="font-size:20px;margin-right:8px;">${inventoryItems[key].icon}</span> ${inventoryItems[key].name} - описание заглушка`;
+      list.appendChild(li);
+    }
+  }
+}
+  const list = document.getElementById('inventory-list');
+  list.innerHTML = "";
+  for (let key in collected) {
+    if (collected[key]) {
+      const li = document.createElement('li');
+      li.textContent = inventoryItems[key] + " - описание заглушка";
+      list.appendChild(li);
+    }
+  }
+}
+
+// Сброс прогресса
+function resetProgress() {
+  collected = {};
+  document.querySelectorAll('.planet').forEach(p => p.classList.remove('completed'));
+  showScreen('intro');
+}
+
+// Кнопки в диалоге
+document.addEventListener("DOMContentLoaded", () => {
+  // Добавим верхние кнопки
+  const top = document.createElement("div");
+  top.id = "top-controls";
+  top.innerHTML = `
+    <button onclick="showScreen('achievements')">🏅</button>
+    <button onclick="showScreen('settings')">⚙️</button>
+    <button id="music-toggle">🔇</button>
+  `;
+  document.body.appendChild(top);
+
+  // Добавим рюкзак к диалогам
+  document.querySelectorAll('.dialog-box').forEach(box => {
+    const header = document.createElement("div");
+    header.className = "dialog-header";
+    header.textContent = "Хранитель Простора";
+    box.appendChild(header);
+
+    const inv = document.createElement("div");
+    inv.className = "dialog-inventory";
+    inv.textContent = "🎒";
+    inv.onclick = () => { updateInventory(); showScreen('inventory'); };
+    box.appendChild(inv);
+  });
+});
+
+
+// Модалка предмета
+function showItemModal(title, desc) {
+  document.getElementById("item-title").innerText = title;
+  document.getElementById("item-desc").innerText = desc;
+  showScreen("item-modal");
+}
+
+function closeItemModal() {
+  showScreen("inventory");
+}
+
+// Переопределяем updateInventory для кликабельных предметов
+function updateInventory() {
+  const list = document.getElementById('inventory-list');
+  list.innerHTML = "";
+  for (let key in collected) {
+    if (collected[key]) {
+      const li = document.createElement('li');
+      li.innerHTML = `<span style="font-size:20px;margin-right:8px;">${inventoryItems[key].icon}</span> ${inventoryItems[key].name}`;
+      li.style.cursor = "pointer";
+      li.onclick = () => showItemModal(inventoryItems[key].name, "Описание этого артефакта появится позже...");
+      list.appendChild(li);
+    }
+  }
+}
