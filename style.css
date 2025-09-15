@@ -115,15 +115,15 @@ p {
   background: rgba(0, 0, 0, 0.85);
   border-radius: 12px;
   padding: 22px;
-  width: 92%;          /* фиксированная ширина */
-  max-width: 500px;    /* верхний предел */
+  min-width: 260px;
+  max-width: 92%;
   margin: 15px auto;
   text-align: left;
   border: 1px solid rgba(255, 255, 255, 0.06);
   position: relative;
-  min-height: 140px;
+  min-height: 140px; /* pre-expanded so text won't expand it */
   max-height: 260px;
-  overflow-y: auto;
+  overflow-y: auto; /* if text is long, scroll inside box */
   box-sizing: border-box;
 }
 
@@ -372,20 +372,10 @@ p {
   }
 
   .dialog-box {
-  background: rgba(0, 0, 0, 0.85);
-  border-radius: 12px;
-  padding: 22px;
-  width: 92%;          /* фиксированная ширина */
-  max-width: 500px;    /* верхний предел */
-  margin: 15px auto;
-  text-align: left;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  position: relative;
-  min-height: 140px;
-  max-height: 260px;
-  overflow-y: auto;
-  box-sizing: border-box;
-}
+    padding: 15px;
+    max-width: 95%;
+    min-height: 120px;
+  }
 
   .btn {
     padding: 12px 20px;

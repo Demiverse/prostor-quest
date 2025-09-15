@@ -27,19 +27,60 @@ function initVK() {
     });
 }
 
-// Loader without forced delay (safe for VK Mini Apps)
+// Loader with 8s minimum
 function startLoader() {
+  const startTime = Date.now();
   const loader = setInterval(() => {
     progress += 5;
     const p = $id('progress');
     if (p) p.innerText = progress + '%';
     if (progress >= 100) {
       clearInterval(loader);
-      initVK()
-        .catch(() => false) // если VK недоступен
-        .finally(() => showScreen('intro')); // всё равно идём дальше
+      const elapsed = Date.now() - startTime;
+      const remaining = Math.max(0, 8000 - elapsed); // at least 8s
+      setTimeout(async ()=>{
+        await initVK();
+        showScreen('intro');
+      }, remaining);
     }
   }, 300);
+}
+
+// Create stars background (once)
+function createStars(count = 100) {
+  if (starsCreated) return;
+  const starsContainer = $id('stars');
+  if (!starsContainer) return;
+  starsContainer.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    const size = Math.random() * 2 + 1;
+    star.style.width = size + 'px';
+    star.style.height = star.style.width;
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 100 + '%';
+    star.style.opacity = Math.random() * 0.7 + 0.3;
+    star.style.animationDelay = Math.random() * 3 + 's';
+    starsContainer.appendChild(star);
+  }
+  starsCreated = true;
+}
+
+// Screen management with history
+function showScreen(id){
+  // only push real screens into history
+  if(id !== 'achievements' && id !== 'inventory' && id !== 'item-modal') {
+    screenHistory.push(id);
+  }
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = $id(id);
+  if(el) el.classList.add('active');
+  
+  if(id === 'map' && !planetsPositioned){ 
+    positionPlanets(); 
+    planetsPositioned = true;
+  }
 }
 
 function goBack(){
