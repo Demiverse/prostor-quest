@@ -147,7 +147,6 @@ function startJourney(){
   if(!musicPlaying) toggleMusic(true);
   showScreen('dialog');
   typeText('dialog-text', "Я — Хранитель Простора. Пять Аспектов ждут тебя. Лишь собрав их вместе, ты сможешь зажечь Источник и противостоять Критику.");
-  initTopControls(); // создаем кнопки после первого диалога
 }
 
 // Open Prostor community
@@ -384,11 +383,8 @@ function resetProgress(){
 document.addEventListener('DOMContentLoaded', ()=>{
   createStars();
   startLoader();
-});
-
-// Создание верхних кнопок (только после диалога)
-function initTopControls(){
-  if ($id('top-controls')) return; // уже создано
+  
+  // Controls
   const top = document.createElement('div');
   top.id = 'top-controls';
   top.innerHTML = `
@@ -398,14 +394,10 @@ function initTopControls(){
     <button id="reset-btn" title="Сброс">↩️</button>
   `;
   document.body.appendChild(top);
-
+  
   $id('music-btn').addEventListener('click', ()=>toggleMusic());
   $id('ach-btn').addEventListener('click', ()=>{ updateAchievements(); showScreen('achievements'); });
   $id('inv-btn').addEventListener('click', ()=>{ updateInventory(); showScreen('inventory'); });
-  $id('reset-btn').addEventListener('click', resetProgress);
-  updateMusicButton();
-}
-$id('inv-btn').addEventListener('click', ()=>{ updateInventory(); showScreen('inventory'); });
   $id('reset-btn').addEventListener('click', resetProgress);
   updateMusicButton();
 });
