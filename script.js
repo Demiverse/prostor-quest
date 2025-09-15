@@ -37,7 +37,7 @@ function startLoader() {
     if (progress >= 100) {
       clearInterval(loader);
       const elapsed = Date.now() - startTime;
-      const remaining = 0;
+      const remaining = Math.max(0, 8000 - elapsed); // at least 8s
       setTimeout(async ()=>{
         await initVK();
         showScreen('intro');
