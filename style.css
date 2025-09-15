@@ -28,7 +28,7 @@ body {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  z-index: 0;
+  z-index: 0; /* behind content but above page background */
   background: radial-gradient(ellipse at center, #0a0e2a 0%, #000000 70%);
 }
 
@@ -55,7 +55,7 @@ body {
   text-align: center;
   box-sizing: border-box;
   position: relative;
-  z-index: 1;
+  z-index: 1; /* above stars */
 }
 
 .screen.active { display: flex; }
@@ -64,7 +64,7 @@ body {
 h1 {
   font-size: 2.2rem;
   margin-bottom: 1.5rem;
-  color: #ffffff;
+  color: #ffffff; /* changed to plain white as requested */
   -webkit-text-fill-color: initial;
   text-shadow: 0 0 8px rgba(0,0,0,0.6);
 }
@@ -88,7 +88,7 @@ p {
 
 /* Buttons */
 .btn {
-  background: #0077FF;
+  background: #0077FF; /* solid requested color */
   border: none;
   border-radius: 10px;
   padding: 14px 24px;
@@ -132,10 +132,11 @@ p {
   font-weight: bold;
   font-size: 16px;
   margin-bottom: 12px;
-  text-align: left;
+  text-align: left; /* moved to left corner as requested */
   margin-left: 6px;
 }
 
+/* make the dialog text area stable */
 .dialog-text {
   min-height: 60px;
   line-height: 1.5;
@@ -153,4 +154,280 @@ p {
   gap: 10px;
 }
 
-/* ... остальное без изменений ... */
+/* Map and planets */
+.map-container {
+  position: relative;
+  width: 95vw;
+  height: 60vh;
+  max-width: 500px;
+  margin: 15px auto;
+}
+
+.planet {
+  position: absolute;
+  width: 76px; /* increased size */
+  height: 76px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background: radial-gradient(circle at 30% 30%, #2c2c54, #000);
+  box-shadow: 0 0 12px rgba(0, 119, 255, 0.5);
+  color: white;
+  text-shadow: 0 0 4px black;
+  animation: float 6s ease-in-out infinite;
+  user-select: none;
+  opacity: 1;
+}
+
+.planet.no-float {
+  animation: none !important;
+}
+
+.planet:hover {
+  transform: scale(1.06);
+  box-shadow: 0 0 18px rgba(255, 26, 134, 0.8);
+}
+
+.planet.completed {
+  background: radial-gradient(circle at 30% 30%, #0077FF, #0044aa);
+  box-shadow: 0 0 18px rgba(0, 119, 255, 0.8);
+}
+
+.center-planet {
+  position: absolute;
+  width: 100px; /* slightly larger center */
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 30% 30%, #FF1A86, #aa1159);
+  box-shadow: 0 0 28px rgba(255, 26, 134, 0.7);
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  z-index: 10;
+  animation: pulse 4s ease-in-out infinite;
+  user-select: none;
+}
+
+/* Controls */
+#top-controls {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 8px;
+  z-index: 1000;
+}
+
+#top-controls button {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+#top-controls button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+
+/* Aspect screen */
+#aspect-puzzle {
+  margin: 15px 0;
+}
+
+#aspect-puzzle input, #aspect-puzzle select {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #0077FF;
+  font-size: 15px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  width: 100%;
+  max-width: 250px;
+}
+
+#aspect-error {
+  color: #FF1A86;
+  font-weight: bold;
+  margin: 8px 0;
+  min-height: 20px;
+  font-size: 14px;
+}
+
+/* Achievements */
+#achievements-list {
+  list-style: none;
+  width: 100%;
+  max-width: 400px;
+  margin: 15px 0;
+  padding: 0;
+}
+
+.ach-item {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.ach-item.done {
+  border-left: 3px solid #0077FF;
+}
+
+.ach-item.undone {
+  border-left: 3px solid #FF1A86;
+  opacity: 0.7;
+}
+
+.ach-icon {
+  font-size: 20px;
+  width: 32px;
+  text-align: center;
+}
+
+/* Inventory */
+#inventory-list {
+  list-style: none;
+  width: 100%;
+  max-width: 400px;
+  margin: 15px 0;
+  padding: 0;
+}
+
+.inv-item {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border-left: 3px solid #0077FF;
+}
+
+.inv-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.item-icon {
+  font-size: 20px;
+  width: 32px;
+  text-align: center;
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-3px) rotate(1deg); }
+  66% { transform: translateY(3px) rotate(-1deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.03); }
+}
+
+/* Mobile adaptations */
+@media (max-width: 768px) {
+  h1 { font-size: 1.8rem; }
+  h2 { font-size: 1.4rem; }
+
+  .map-container {
+    height: 50vh;
+  }
+
+  .planet {
+    width: 64px;
+    height: 64px;
+    font-size: 12px;
+  }
+
+  .center-planet {
+    width: 82px;
+    height: 82px;
+    font-size: 12px;
+  }
+
+  .dialog-box {
+  background: rgba(0, 0, 0, 0.85);
+  border-radius: 12px;
+  padding: 22px;
+  width: 92%;          /* фиксированная ширина */
+  max-width: 500px;    /* верхний предел */
+  margin: 15px auto;
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  position: relative;
+  min-height: 140px;
+  max-height: 260px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+  .btn {
+    padding: 12px 20px;
+    font-size: 15px;
+    margin: 8px;
+  }
+
+  #top-controls {
+    top: 5px;
+    right: 5px;
+  }
+
+  #top-controls button {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 { font-size: 1.6rem; }
+  h2 { font-size: 1.3rem; }
+
+  .planet {
+    width: 56px;
+    height: 56px;
+    font-size: 10px;
+  }
+
+  .center-planet {
+    width: 72px;
+    height: 72px;
+    font-size: 11px;
+  }
+
+  .dialog-actions.two-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .dialog-actions.two-buttons .btn {
+    width: 100%;
+    max-width: 250px;
+  }
+}
