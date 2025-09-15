@@ -27,7 +27,7 @@ function initVK() {
     });
 }
 
-// Loader without forced delay
+// Loader without forced delay (safe for VK Mini Apps)
 function startLoader() {
   const loader = setInterval(() => {
     progress += 5;
@@ -35,7 +35,9 @@ function startLoader() {
     if (p) p.innerText = progress + '%';
     if (progress >= 100) {
       clearInterval(loader);
-      initVK().then(() => showScreen('intro'));
+      initVK()
+        .catch(() => false) // если VK недоступен
+        .finally(() => showScreen('intro')); // всё равно идём дальше
     }
   }, 300);
 }
